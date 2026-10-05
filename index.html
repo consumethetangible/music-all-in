@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0c0c">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="All-In">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>All-In logger</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2212%22%20fill%3D%22%230e0c0c%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%224.0%22%20fill%3D%22none%22%20stroke%3D%22%23f0a13a%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%227.4%22%20fill%3D%22none%22%20stroke%3D%22%23eb9438%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2210.8%22%20fill%3D%22none%22%20stroke%3D%22%23e68736%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2214.2%22%20fill%3D%22none%22%20stroke%3D%22%23e17a34%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2217.6%22%20fill%3D%22none%22%20stroke%3D%22%23dc6d32%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2221.0%22%20fill%3D%22none%22%20stroke%3D%22%23d76030%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224.4%22%20fill%3D%22none%22%20stroke%3D%22%23d2532e%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2227.8%22%20fill%3D%22none%22%20stroke%3D%22%23cd462c%22%20stroke-width%3D%221.8%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2231.2%22%20fill%3D%22none%22%20stroke%3D%22%23c9392a%22%20stroke-width%3D%221.8%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0c0c; --surface:#171313; --raised:#201919; --field:#110e0e;
+  --line:#322828; --line2:#4d3e3e;
+  --ink:#f2eadf; --mute:#a99d90;
+  --amber:#f0a13a; --amber-ink:#1c1206;
+  --red:#c9392a; --ok:#62b58a; --warn:#e3b341; --err:#ff7a68; --focus:#8cbcff;
+  --head:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  --ui:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;color:var(--ink);font:15px/1.45 var(--ui);
+  background:radial-gradient(1100px 480px at 8% -12%,rgba(201,57,42,.17),transparent 62%),var(--bg);
+  display:grid;grid-template-rows:auto auto minmax(0,1fr);height:100vh;height:100dvh;
+  padding-left:var(--sl);padding-right:var(--sr);overflow:hidden}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button{font:inherit;color:var(--ink);background:var(--raised);border:1px solid var(--line2);border-radius:8px;padding:9px 14px;min-height:40px;cursor:pointer;transition:border-color .15s,background .15s}
+button:hover:not(:disabled){border-color:var(--amber)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
+button.primary:hover:not(:disabled){background:#f6b257}
+button.ghost{background:transparent}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- top bar ---------- */
+.bar{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"brand chips sync menu";
+  align-items:center;gap:14px;padding:calc(10px + var(--st)) 18px 10px;background:rgba(14,12,12,.88);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);position:relative;z-index:5}
+.bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--amber) 28%,var(--red) 72%,transparent);opacity:.6}
+#btnBack{grid-area:back;display:none;padding:6px 12px 6px 8px;font-weight:600;gap:4px;align-items:center}
+.brand{grid-area:brand;display:flex;align-items:center;gap:10px}
+.brand svg{width:32px;height:32px;flex:none}
+.brand b{font:700 28px/1 var(--head);letter-spacing:.02em}
+.chips{grid-area:chips;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:baseline;gap:8px;border-radius:999px;padding:6px 14px;min-height:38px;
+  background:linear-gradient(90deg,rgba(240,161,58,.26) var(--p,0%),transparent var(--p,0%)),var(--surface);border-color:var(--line2)}
+.chip small{font-size:12.5px;color:var(--mute)}
+.chip strong{font-size:15px}
+.chip.ok{border-color:rgba(98,181,138,.7)}
+.chip.bad{border-color:var(--err)} .chip.bad strong{color:var(--err)}
+.sync{grid-area:sync;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);max-width:260px}
+.sync span#syncText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--line2)}
+.dot.ok{background:var(--ok);box-shadow:0 0 8px rgba(98,181,138,.7)}
+.dot.pending{background:var(--warn);animation:pulse 1s ease-in-out infinite}
+.dot.err{background:var(--err)}
+@keyframes pulse{50%{opacity:.35}}
+#btnMenu{grid-area:menu;width:42px;padding:0;font-size:22px;line-height:1}
+
+.banner{padding:10px 18px;background:#33260d;border-bottom:1px solid #6b4d14;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.banner[hidden]{display:none}
+.banner span{flex:1 1 280px}
+
+/* ---------- panes ---------- */
+.work{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);min-height:0}
+.index{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.searchbox{padding:14px 14px 8px;position:relative}
+#q{width:100%;font:inherit;font-size:16px;padding:11px 14px 11px 40px;min-height:46px;border:1px solid var(--line2);border-radius:10px;background:var(--field);color:var(--ink)}
+.searchbox svg{position:absolute;left:28px;top:28px;width:18px;height:18px;color:var(--mute);pointer-events:none}
+.filters{display:flex;gap:6px;padding:4px 14px 10px;overflow-x:auto;scrollbar-width:none}
+.filters button{flex:none;min-height:34px;padding:4px 12px;border-radius:999px;font-size:13.5px;background:transparent}
+.filters button[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);font-weight:700}
+#list{list-style:none;margin:0;padding:0 0 var(--sb);overflow:auto;flex:1;min-height:0;overscroll-behavior:contain}
+#list button.item{width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;
+  padding:9px 14px;min-height:64px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center}
+#list button.item:hover{background:var(--surface)}
+#list button.item.hi{background:var(--surface);box-shadow:inset 3px 0 0 var(--line2)}
+#list button.item[aria-current="true"]{background:var(--raised);box-shadow:inset 3px 0 0 var(--amber)}
+#list .nm{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#list .meta{display:block;font-size:12.5px;color:var(--mute)}
+#list .marks{display:flex;gap:5px}
+.mk{font-size:11.5px;font-weight:800;padding:1px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--mute)}
+.mk.top{background:var(--red);border-color:var(--red);color:#fff}
+.mk.pick{border-color:var(--amber);color:var(--amber)}
+#list .newone{color:var(--amber);font-weight:700}
+.cv{display:block;object-fit:cover;background:#2a2222;border-radius:6px}
+.cv.ph{display:flex;align-items:center;justify-content:center;font:700 1em/1 var(--head);letter-spacing:.04em}
+.cv.s{width:44px;height:44px;font-size:17px}
+.cv.m{width:100%;aspect-ratio:1/1;font-size:46px}
+.cv.l{width:100%;aspect-ratio:1/1;font-size:54px}
+
+.editor{overflow:auto;padding:26px 30px calc(60px + var(--sb));min-height:0;overscroll-behavior:contain;scroll-behavior:smooth}
+.empty{max-width:480px;margin:10vh auto 0;text-align:center;color:var(--mute)}
+.empty svg{width:120px;height:120px;opacity:.5;margin-bottom:10px}
+.empty strong{display:block;font:700 36px/1.05 var(--head);color:var(--ink);margin-bottom:6px}
+.artist-h{font:700 64px/.95 var(--head);letter-spacing:.01em;margin:0 0 6px;overflow-wrap:anywhere}
+.sub{margin:0 0 22px;color:var(--mute)}
+
+.album{display:grid;grid-template-columns:150px minmax(0,1fr);grid-template-areas:"cv ahead" "cv fields";gap:6px 20px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 18px;max-width:1020px}
+.album.top9{border-left:4px solid var(--red)}
+.album.ispick:not(.top9){border-left:4px solid var(--amber)}
+.album.flash{box-shadow:0 0 0 3px var(--focus)}
+.album .cvslot{grid-area:cv;align-self:start}
+.album .ahead{grid-area:ahead;display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:34px}
+.album .fields{grid-area:fields;min-width:0}
+.atitle{font-weight:700;font-size:19px;overflow-wrap:anywhere}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12.5px;font-weight:700;padding:2px 9px;border:1px solid var(--line2);border-radius:999px;color:var(--mute)}
+.tag.top{background:var(--red);border-color:var(--red);color:#fff}
+.tag.pick{border-color:var(--amber);color:var(--amber)}
+.tag.off{border-style:dashed}
+.row{display:grid;gap:12px 14px;margin:0 0 12px}
+.r2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.r5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.f label{display:block;font-size:13px;font-weight:600;color:var(--mute);margin-bottom:5px}
+.f input,.f select,.f textarea{width:100%;font:inherit;font-size:16px;min-height:44px;padding:9px 12px;border:1px solid var(--line2);border-radius:8px;background:var(--field);color:var(--ink)}
+.f select{appearance:none;-webkit-appearance:none;padding-right:34px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a99d90' stroke-width='1.8'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:12px}
+.f textarea{font-family:var(--serif);line-height:1.6;resize:vertical;min-height:96px}
+.f input:focus,.f select:focus,.f textarea:focus,#q:focus{outline:2px solid var(--amber);outline-offset:0;border-color:var(--amber)}
+.count{display:block;margin-top:4px;font-size:12.5px;color:var(--mute)}
+.note{display:block;margin-top:4px;font-size:12.5px;color:var(--err);font-weight:600}
+.addrow{margin-top:4px}
+
+/* ---------- review sheet ---------- */
+dialog{border:1px solid var(--line2);border-radius:14px;padding:0;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(5,3,3,.7)}
+#review{width:min(920px,calc(100% - 28px));max-height:calc(100dvh - 28px)}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:calc(14px + var(--st)) 20px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.rhead h2{font:700 30px/1 var(--head);margin:0}
+#reviewBody{padding:6px 20px calc(24px + var(--sb));overflow:auto;max-height:calc(100dvh - 120px)}
+#reviewBody h3{font:700 24px/1 var(--head);margin:22px 0 4px}
+.rsum{margin:0 0 12px;color:var(--mute);font-size:14px}
+.rsum.bad{color:var(--err);font-weight:600} .rsum.good{color:var(--ok);font-weight:600}
+.wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tile{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile .who{min-width:0;font-size:13.5px;line-height:1.3}
+.tile .who strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .who em{display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .acts{display:flex;gap:6px}
+.tile .acts button{flex:1;min-height:36px;padding:4px 8px;font-size:13.5px}
+.tile.empty-slot .cv{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;border:2px dashed var(--line2);background:transparent;color:var(--mute);font-size:14px;text-align:center;padding:8px}
+.pickrow{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.pickrow .who{min-width:0;line-height:1.3}
+.pickrow .who strong,.pickrow .who em{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pickrow .who em{color:var(--mute);font-size:13px}
+.pickrow button{min-height:36px;padding:4px 11px;font-size:14px}
+.rgenre{margin:16px 0 0;font-weight:700;display:flex;align-items:center;gap:10px}
+.rnone{padding:8px 0;color:var(--err);font-weight:600}
+.rnone small{display:block;color:var(--mute);font-weight:400}
+
+/* ---------- menu + toast ---------- */
+#menu{width:min(360px,calc(100% - 28px));margin:auto}
+#menu .items{display:flex;flex-direction:column;gap:8px;padding:16px}
+#menu .items button{text-align:left;min-height:48px}
+#menu h2{font:700 24px/1 var(--head);margin:0;padding:16px 16px 0}
+#menu small{display:block;padding:4px 16px 0;color:var(--mute)}
+#toast{position:fixed;left:50%;bottom:calc(20px + var(--sb));transform:translate(-50%,20px);background:var(--ink);color:#1a1414;padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:calc(100% - 32px)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- welcome / connect ---------- */
+.welcome{position:fixed;inset:0;z-index:20;overflow:auto;display:none;padding:calc(24px + var(--st)) 16px calc(24px + var(--sb));
+  background:radial-gradient(900px 500px at 50% -10%,rgba(201,57,42,.28),transparent 65%),var(--bg)}
+body[data-state="welcome"] .welcome,body[data-state="loading"] .welcome{display:block}
+.wcard{max-width:560px;margin:4vh auto 0}
+.wcard svg.wlogo{width:84px;height:84px;margin-bottom:6px}
+.wcard h1{font:700 52px/.95 var(--head);margin:0 0 10px}
+.wlead{color:var(--mute);margin:0 0 22px;font-size:16px}
+.wcard .f{margin-bottom:14px}
+.wcard .two{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.werr{margin:0 0 14px;padding:10px 12px;border:1px solid var(--err);border-radius:8px;color:var(--err);background:rgba(255,122,104,.08)}
+.wcard .primary{width:100%;min-height:50px;font-size:16px}
+.how{margin:18px 0 0;color:var(--mute)}
+.how summary{cursor:pointer;color:var(--amber);font-weight:600;min-height:32px}
+.how ol{padding-left:20px;margin:8px 0}
+.alt{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.alt p{margin:0;color:var(--mute);font-size:14px}
+.loading{color:var(--mute);text-align:center;margin-top:16vh;font-size:17px}
+body[data-state="loading"] .wcard{display:none}
+body:not([data-state="loading"]) .loading{display:none}
+
+/* ---------- tablet ---------- */
+@media(max-width:1100px){
+  .work{grid-template-columns:minmax(260px,300px) minmax(0,1fr)}
+  .r5{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .artist-h{font-size:52px}
+  .editor{padding:22px 22px calc(60px + var(--sb))}
+  .sync span#syncText{display:none}
+}
+
+/* ---------- phone and portrait tablet: one pane at a time ---------- */
+@media(max-width:859px){
+  .bar{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"brand sync menu" "chips chips chips";gap:8px 10px;padding:calc(8px + var(--st)) 12px 8px}
+  .brand b{font-size:24px}
+  .brand svg{width:28px;height:28px}
+  body[data-view="editor"] #btnBack{display:inline-flex}
+  body[data-view="editor"] .brand{display:none}
+  body[data-view="editor"] .bar{grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"back . sync menu" "chips chips chips chips"}
+  .work{grid-template-columns:1fr}
+  body[data-view="list"] .editor{display:none}
+  body[data-view="editor"] .index{display:none}
+  .index{border-right:0}
+  .sync span#syncText{display:inline;max-width:110px}
+  .editor{padding:16px 14px calc(70px + var(--sb))}
+  .artist-h{font-size:42px}
+  .album{grid-template-columns:76px minmax(0,1fr);grid-template-areas:"cv ahead" "fields fields";padding:14px;gap:10px 14px}
+  .atitle{font-size:17px}
+  .r2{grid-template-columns:1fr}
+  .r5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wall{gap:8px}
+  dialog#review{width:100%;max-width:none;height:100%;max-height:none;margin:0;border-radius:0;border:0}
+  #reviewBody{max-height:calc(100dvh - 76px - var(--st))}
+  .tile .who{font-size:12.5px}
+}
+@media(max-width:420px){
+  .chip{padding:5px 11px}
+  .sync span#syncText{display:none}
+  .wcard h1{font-size:44px}
+  .wcard .two{grid-template-columns:1fr}
+  .pickrow{grid-template-columns:44px minmax(0,1fr) auto}
+  .pickrow button.open{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body data-state="loading" data-view="list">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0a13a"/><stop offset="1" stop-color="#c9392a"/></linearGradient>
+    <symbol id="rings" viewBox="0 0 64 64" fill="none" stroke="url(#ringg)" stroke-width="1.8">
+      <circle cx="32" cy="32" r="3.2" fill="url(#ringg)" stroke="none"/>
+      <circle cx="32" cy="32" r="7"/><circle cx="32" cy="32" r="10.4"/><circle cx="32" cy="32" r="13.8"/><circle cx="32" cy="32" r="17.2"/>
+      <circle cx="32" cy="32" r="20.6"/><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="27.4"/><circle cx="32" cy="32" r="30.8" stroke-opacity=".55"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="bar">
+  <button id="btnBack" type="button" aria-label="Back to the artist list">‹ Artists</button>
+  <div class="brand"><svg aria-hidden="true"><use href="#rings"/></svg><b>All-In</b></div>
+  <div class="chips" id="chips" aria-label="Progress"></div>
+  <div class="sync" role="status" aria-live="polite"><span class="dot" id="syncDot"></span><span id="syncText">Not connected</span></div>
+  <button id="btnMenu" type="button" aria-label="Menu">⋯</button>
+</header>
+
+<div id="banner" class="banner" role="alert" hidden></div>
+
+<main class="work">
+  <aside class="index" aria-label="Artists">
+    <div class="searchbox">
+      <label class="sr" for="q">Search artists or albums</label>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l5 5" stroke-linecap="round"/></svg>
+      <input id="q" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Search artists or albums" disabled>
+    </div>
+    <div class="filters" id="filters" role="group" aria-label="Filter the list"></div>
+    <ul id="list"></ul>
+  </aside>
+  <section id="editor" class="editor" aria-live="polite"></section>
+</main>
+
+<section id="welcome" class="welcome" aria-labelledby="wTitle">
+  <div class="loading" role="status">Opening your list…</div>
+  <div class="wcard">
+    <svg class="wlogo" aria-hidden="true"><use href="#rings"/></svg>
+    <h1 id="wTitle">All-In logger</h1>
+    <p class="wlead">Log your year in metal from any device. Your list lives in a private GitHub repo and saves there as you type, so every change is backed up and can be rolled back.</p>
+    <form id="ghForm" autocomplete="off">
+      <div class="two">
+        <div class="f"><label for="gOwner">GitHub username</label><input id="gOwner" autocapitalize="none" spellcheck="false" required></div>
+        <div class="f"><label for="gRepo">Private repo</label><input id="gRepo" autocapitalize="none" spellcheck="false" required></div>
+      </div>
+      <div class="two">
+        <div class="f"><label for="gPath">File in the repo</label><input id="gPath" value="all-in.csv" autocapitalize="none" spellcheck="false" required></div>
+        <div class="f"><label for="gBranch">Branch</label><input id="gBranch" value="main" autocapitalize="none" spellcheck="false" required></div>
+      </div>
+      <div class="f"><label for="gToken">Access token</label><input id="gToken" type="password" autocapitalize="none" spellcheck="false" placeholder="Paste once per device"></div>
+      <p class="werr" id="gError" role="alert" hidden></p>
+      <button class="primary" type="submit" id="gGo">Connect and open</button>
+      <button type="button" class="ghost" id="btnWBack" hidden style="width:100%;margin-top:10px">Back to my list</button>
+    </form>
+    <details class="how">
+      <summary>How to make the access token</summary>
+      <ol>
+        <li>On GitHub, open Settings, then Developer settings, then Personal access tokens, then Fine-grained tokens.</li>
+        <li>Choose Generate new token and give it a name like All-In logger. Set an expiry you are comfortable with.</li>
+        <li>Under Repository access, choose Only select repositories and pick your private repo.</li>
+        <li>Under Permissions, Repository permissions, set Contents to Read and write.</li>
+        <li>Generate the token, copy it, and paste it above. GitHub only shows it once.</li>
+      </ol>
+      The token is kept in this browser only. It can touch that one repo and nothing else.
+    </details>
+    <div class="alt">
+      <p>Just trying it out? You can work on a CSV file stored on this computer instead.</p>
+      <button type="button" id="btnReconnect" class="primary" hidden></button>
+      <button type="button" id="btnLocal" class="ghost">Open a CSV on this computer</button>
+    </div>
+  </div>
+</section>
+
+<dialog id="review" aria-labelledby="reviewTitle">
+  <div class="rhead"><h2 id="reviewTitle">Top 9 and genre picks</h2><button type="button" id="reviewClose">Done</button></div>
+  <div id="reviewBody"></div>
+</dialog>
+
+<dialog id="menu" aria-labelledby="menuTitle">
+  <h2 id="menuTitle">Menu</h2>
+  <small id="menuWhere"></small>
+  <div class="items">
+    <button type="button" id="mReload">Reload from GitHub</button>
+    <button type="button" id="mCopy">Download a copy of the CSV</button>
+    <button type="button" id="mSettings">Connection settings</button>
+    <button type="button" id="mForget" class="ghost">Forget this device</button>
+    <button type="button" id="mClose" class="ghost">Close</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fallbackInput" accept=".csv,text/csv" hidden>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ===== settings you may want to change ===== */
+  const GENRES = ['Black Metal','Death & Doom','Sludge','Stoner & Psych','Prog & Tech','Trad & Thrash','Hardcore & Punk'];
+  const TYPES  = ['LP','EP','Split','Demo','Live','Archival','Reissue','Soundtrack','Single'];
+  const SHOWN_TYPES = ['', 'LP', 'EP'];                 // only these appear on the page
+  const CFG_KEY = 'allin.github.v1';
+  /* ========================================== */
+
+  const ALIASES = {
+    artist:['artist'], album:['album'], year:['year'], genre:['genre'], type:['type','kind'],
+    top9:['top 9','top9'], pick:['genre pick','pick'], sentence:['sentence'],
+    listen:['listen url','listen'], cover:['cover url','cover'],
+    writeup:['write-up url','writeup url','write-up'], added:['date added','added']
+  };
+
+  /* ---------- state ---------- */
+  let header = [], rows = [], col = {};
+  let eol = '\r\n', bom = false, endsWithNewline = true;
+  let store = null, version = null;
+  let selected = null, shown = [], hi = -1, filter = 'all';
+  let saveTimer = null, saving = false, saveAgain = false, dirty = false, pushed = false;
+  const touched = new Set();
+  class Conflict extends Error {}
+
+  const $ = s => document.querySelector(s);
+  const q = $('#q'), listEl = $('#list'), editor = $('#editor'), banner = $('#banner');
+  const body = document.body;
+
+  /* ---------- helpers ---------- */
+  function h(tag, attrs = {}, ...kids) {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') e.className = v;
+      else if (k === 'text') e.textContent = v;
+      else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+      else if (v === true) e.setAttribute(k, '');
+      else if (v !== false && v != null) e.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) { if (kid == null || kid === false) continue; e.append(kid.nodeType ? kid : document.createTextNode(kid)); }
+    return e;
+  }
+  const FOLD = { 'ø':'o','æ':'ae','œ':'oe','ß':'ss','đ':'d','ł':'l','ð':'d','þ':'th' };
+  const fold = s => String(s || '').toLowerCase().replace(/[øæœßđłðþ]/g, m => FOLD[m]).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const sortKey = s => fold(s).replace(/^(the|a)\s+/, '').trim();
+  const val = (i, key) => { const c = col[key]; return c == null ? '' : (rows[i][c] ?? ''); };
+  function setVal(i, key, v) { const c = col[key]; if (c == null) return; while (rows[i].length <= c) rows[i].push(''); rows[i][c] = v; }
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const nowTime = () => new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+  const isNarrow = () => (window.matchMedia ? window.matchMedia('(max-width: 859px)').matches : window.innerWidth < 859);
+  const enc = encodeURIComponent;
+  function genreList() { const extra = []; rows.forEach((_, i) => { const g = val(i, 'genre'); if (g && !GENRES.includes(g) && !extra.includes(g)) extra.push(g); }); return [...GENRES, ...extra]; }
+  function openDlg(d) { if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', ''); }
+  function closeDlg(d) { if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); }
+  const dlgOpen = d => d.open || d.hasAttribute('open');
+  let toastTimer = null;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+
+  /* ---------- CSV ---------- */
+  function parseCSV(text) {
+    const out = []; let row = [], f = '', i = 0, inQ = false, atStart = true;
+    while (i < text.length) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') { if (text[i+1] === '"') { f += '"'; i += 2; continue; } inQ = false; i++; continue; }
+        f += c; i++; continue;
+      }
+      if (c === '"' && atStart) { inQ = true; atStart = false; i++; continue; }
+      if (c === ',') { row.push(f); f = ''; atStart = true; i++; continue; }
+      if (c === '\r' || c === '\n') {
+        if (c === '\r' && text[i+1] === '\n') i++;
+        row.push(f); out.push(row); row = []; f = ''; atStart = true; i++; continue;
+      }
+      f += c; atStart = false; i++;
+    }
+    if (f !== '' || row.length) { row.push(f); out.push(row); }
+    return out.filter(r => !(r.length === 1 && r[0] === ''));
+  }
+  const esc = v => { v = v == null ? '' : String(v); return /[",\r\n]|^\s|\s$/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  function toCSV() {
+    const lines = [header, ...rows].map((r, n) => {
+      const cells = r.slice(); if (n > 0) while (cells.length < header.length) cells.push('');
+      return cells.map(esc).join(',');
+    });
+    return (bom ? '\ufeff' : '') + lines.join(eol) + (endsWithNewline ? eol : '');
+  }
+  function ingest(text, name, opts = {}) {
+    const keep = opts.keep ? selected : null;
+    bom = text.charCodeAt(0) === 0xFEFF; if (bom) text = text.slice(1);
+    eol = text.includes('\r\n') ? '\r\n' : '\n';
+    endsWithNewline = /\n$/.test(text);
+    const parsed = parseCSV(text);
+    if (!parsed.length) throw new Error('That file is empty.');
+    const hd = parsed[0], cm = {};
+    const norm = hd.map(x => String(x).trim().toLowerCase());
+    for (const [key, names] of Object.entries(ALIASES)) { const idx = norm.findIndex(n => names.includes(n)); if (idx >= 0) cm[key] = idx; }
+    if (cm.artist == null || cm.album == null) throw new Error('This does not look like the All-In list. It needs Artist and Album columns.');
+    header = hd; rows = parsed.slice(1); col = cm;
+    const missing = Object.keys(ALIASES).filter(k => col[k] == null);
+    if (missing.length) showBanner(`These columns were not found, so their fields are hidden: ${missing.join(', ')}.`); else hideBanner();
+    selected = keep && rows.some((_, i) => val(i, 'artist').trim() === keep) ? keep : null;
+    dirty = false; hi = -1; q.disabled = false; q.value = '';
+    renderList(); renderEditor(); refreshStats();
+  }
+
+  /* ---------- banner and status ---------- */
+  function showBanner(msg, actions = []) {
+    banner.replaceChildren(h('span', { text: msg }), ...actions.map(a => h('button', { type: 'button', text: a.label, onclick: a.run })));
+    banner.hidden = false;
+  }
+  const hideBanner = () => { banner.hidden = true; banner.replaceChildren(); };
+  function setState(msg, kind = '') { $('#syncText').textContent = msg; $('#syncDot').className = 'dot ' + kind; }
+
+  /* ---------- base64 for GitHub ---------- */
+  const textToB64 = t => { const bytes = new TextEncoder().encode(t); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); };
+  const b64ToText = b => { const bin = atob(b.replace(/\s/g, '')); const bytes = Uint8Array.from(bin, c => c.charCodeAt(0)); return new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes); };
+
+  /* ---------- storage backends ---------- */
+  function githubStore(cfg) {
+    const base = () => `https://api.github.com/repos/${enc(cfg.owner)}/${enc(cfg.repo)}/contents/${cfg.path.split('/').map(enc).join('/')}`;
+    const hdr = (extra = {}) => ({ Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...extra });
+    async function call(url, opts) { try { return await fetch(url, opts); } catch (_) { throw new Error('Cannot reach GitHub. Check your connection.'); } }
+    async function problem(res) {
+      let msg = ''; try { msg = (await res.clone().json()).message || ''; } catch (_) {}
+      if (res.status === 401) return new Error('GitHub rejected the token. It may be expired or mistyped.');
+      if (res.status === 403) return new Error('GitHub refused access. The token needs Contents: Read and write on this repo. ' + msg);
+      if (res.status === 404) return new Error('Not found. Check the username, repo, file name and branch, and that the token covers this repo.');
+      return new Error(`GitHub error ${res.status}. ${msg}`);
+    }
+    async function load() {
+      const res = await call(base() + '?ref=' + enc(cfg.branch), { headers: hdr(), cache: 'no-store' });
+      if (!res.ok) throw await problem(res);
+      const j = await res.json();
+      if (j.encoding !== 'base64' || typeof j.content !== 'string') throw new Error('GitHub did not return the file contents. Files over 1 MB are not supported.');
+      return { text: b64ToText(j.content), version: j.sha };
+    }
+    async function save(text, ver, message, force) {
+      const sha = force ? (await load()).version : ver;
+      const res = await call(base(), { method: 'PUT', headers: hdr({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ message, content: textToB64(text), sha, branch: cfg.branch }) });
+      if (res.status === 409) throw new Conflict();
+      if (res.status === 422) { let m = ''; try { m = (await res.clone().json()).message || ''; } catch (_) {} if (/sha|match/i.test(m)) throw new Conflict(); throw await problem(res); }
+      if (!res.ok) throw await problem(res);
+      return (await res.json()).content.sha;
+    }
+    return { kind: 'github', name: cfg.path, label: `${cfg.owner}/${cfg.repo}`, short: 'to GitHub', delay: 1800, load, save };
+  }
+  function localStore(hd) {
+    return { kind: 'local', name: hd.name, label: hd.name, short: 'to ' + hd.name, delay: 600, handle: hd,
+      async load() { const f = await hd.getFile(); return { text: await f.text(), version: f.lastModified }; },
+      async save(text, ver, message, force) {
+        const f = await hd.getFile(); if (!force && f.lastModified !== ver) throw new Conflict();
+        const w = await hd.createWritable(); await w.write(text); await w.close(); return (await hd.getFile()).lastModified;
+      } };
+  }
+  const copyStore = name => ({ kind: 'copy', name, label: name, short: '' });
+
+  /* ---------- connecting ---------- */
+  const readCfg = () => { try { return JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); } catch (_) { return null; } };
+  const writeCfg = c => { try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch (_) {} };
+  function showWelcome(err, cfg) {
+    body.dataset.state = 'welcome';
+    const c = cfg || readCfg() || {};
+    $('#gOwner').value = c.owner || ''; $('#gRepo').value = c.repo || ''; $('#gPath').value = c.path || 'all-in.csv'; $('#gBranch').value = c.branch || 'main';
+    $('#gToken').value = ''; $('#gToken').placeholder = c.token ? 'Saved on this device. Leave blank to keep it.' : 'Paste once per device';
+    const e = $('#gError'); e.hidden = !err; e.textContent = err || '';
+    $('#btnWBack').hidden = !(store && rows.length);
+  }
+  $('#btnWBack').addEventListener('click', () => { body.dataset.state = 'app'; });
+  async function useStore(s, opts = {}) {
+    setState('Loading…', 'pending');
+    const r = await s.load();
+    ingest(r.text, s.name, opts);
+    store = s; version = r.version; body.dataset.state = 'app'; body.dataset.view = 'list';
+    setState(s.kind === 'github' ? `Opened from ${s.label}` : `Opened ${s.name}`, 'ok');
+  }
+  $('#ghForm').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const old = readCfg() || {};
+    const cfg = { owner: $('#gOwner').value.trim(), repo: $('#gRepo').value.trim(), path: $('#gPath').value.trim().replace(/^\/+/, ''),
+                  branch: $('#gBranch').value.trim() || 'main', token: $('#gToken').value.trim() || old.token || '' };
+    if (!cfg.token) { showWelcome('Paste your access token to connect.', cfg); return; }
+    const go = $('#gGo'); go.disabled = true; go.textContent = 'Connecting…';
+    try { await useStore(githubStore(cfg)); writeCfg(cfg); }
+    catch (e) { showWelcome(e.message, cfg); }
+    finally { go.disabled = false; go.textContent = 'Connect and open'; }
+  });
+
+  /* local file on this computer (Chrome and Edge on desktop) */
+  const canFS = () => typeof window.showOpenFilePicker === 'function';
+  async function ensurePermission(hd) { const o = { mode: 'readwrite' }; if ((await hd.queryPermission(o)) === 'granted') return true; return (await hd.requestPermission(o)) === 'granted'; }
+  const idb = () => new Promise((res, rej) => { const r = indexedDB.open('allin-logger', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  async function remember(hd) { try { (await idb()).transaction('kv', 'readwrite').objectStore('kv').put(hd, 'csv'); } catch (_) {} }
+  async function recall() { try { const db = await idb(); return await new Promise(res => { const r = db.transaction('kv').objectStore('kv').get('csv'); r.onsuccess = () => res(r.result || null); r.onerror = () => res(null); }); } catch (_) { return null; } }
+  $('#btnLocal').addEventListener('click', async () => {
+    if (!canFS()) { $('#fallbackInput').click(); return; }
+    try {
+      const [hd] = await window.showOpenFilePicker({ types: [{ description: 'CSV file', accept: { 'text/csv': ['.csv'] } }] });
+      if (!(await ensurePermission(hd))) { showWelcome('Permission to edit the file was not granted.'); return; }
+      await useStore(localStore(hd)); remember(hd);
+    } catch (e) { if (e.name !== 'AbortError') showWelcome('Could not open the file: ' + e.message); }
+  });
+  $('#fallbackInput').addEventListener('change', async ev => {
+    const f = ev.target.files[0]; if (!f) return;
+    try {
+      ingest(await f.text(), f.name); store = copyStore(f.name); version = null; body.dataset.state = 'app';
+      setState('Copy mode. Nothing saves to the original.', 'pending');
+      showBanner('This browser cannot save back to a local file. Edits stay on screen until you download a copy from the menu.');
+    } catch (e) { showWelcome(e.message); }
+  });
+
+  /* ---------- saving ---------- */
+  function commitMessage() {
+    const names = [...touched]; const more = names.length > 3 ? ` and ${names.length - 3} more` : '';
+    return names.length ? `Update ${names.slice(0, 3).join(', ')}${more}` : 'Update list';
+  }
+  function markDirty() {
+    dirty = true;
+    if (!store || store.kind === 'copy') { setState('Copy mode. Not saved to a file.', 'pending'); return; }
+    setState('Unsaved changes…', 'pending'); clearTimeout(saveTimer); saveTimer = setTimeout(() => save(), store.delay);
+  }
+  async function save(force = false) {
+    if (!store || store.kind === 'copy' || !dirty) return;
+    if (saving) { saveAgain = true; return; }
+    saving = true; clearTimeout(saveTimer); setState('Saving…', 'pending');
+    try {
+      version = await store.save(toCSV(), version, commitMessage(), force);
+      dirty = false; touched.clear(); hideBanner(); setState(`Saved ${store.short} at ${nowTime()}`, 'ok');
+    } catch (e) {
+      if (e instanceof Conflict) {
+        setState('Not saved. The file changed elsewhere.', 'err');
+        showBanner('The list was changed somewhere else (another device, or an edit on GitHub) since you opened it. Saving now would overwrite that.', [
+          { label: 'Load the latest (drop my unsaved edits)', run: reloadNow },
+          { label: 'Overwrite with what is on screen', run: () => { hideBanner(); save(true); } }]);
+      } else {
+        setState('Could not save', 'err');
+        showBanner(e.message, [{ label: 'Try again', run: () => { hideBanner(); save(); } }]);
+      }
+    } finally { saving = false; if (saveAgain) { saveAgain = false; if (dirty) save(); } }
+  }
+  async function reloadNow() {
+    try { hideBanner(); const r = await store.load(); version = r.version; ingest(r.text, store.name, { keep: true }); dirty = false; touched.clear(); setState(`Loaded the latest at ${nowTime()}`, 'ok'); toast('Loaded the latest from ' + store.label); }
+    catch (e) { showBanner(e.message); }
+  }
+  async function refreshRemote(manual) {
+    if (!store || store.kind !== 'github' || saving) return;
+    if (dirty) { if (manual) toast('You have unsaved edits. Wait for the save, then reload.'); return; }
+    try {
+      const r = await store.load();
+      if (r.version !== version) { version = r.version; ingest(r.text, store.name, { keep: true }); setState(`Updated from GitHub at ${nowTime()}`, 'ok'); toast('Updated from GitHub'); }
+      else if (manual) toast('Already up to date');
+    } catch (e) { if (manual) showBanner(e.message); }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (dirty && store && store.kind !== 'copy') save(); } else refreshRemote(false);
+  });
+  window.addEventListener('online', () => { if (dirty) save(); });
+  window.addEventListener('beforeunload', e => { if (dirty && store && store.kind !== 'copy') { e.preventDefault(); e.returnValue = ''; } });
+  function downloadCopy() {
+    const blob = new Blob([toCSV()], { type: 'text/csv;charset=utf-8' });
+    const a = h('a', { href: URL.createObjectURL(blob), download: ((store && store.name) || 'all-in.csv').replace(/\.csv$/i, '') + '-copy.csv' });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  /* ---------- covers ---------- */
+  const PAL = [['#2b2540','#c2b8f0'],['#3d3a22','#e6dc84'],['#1f3440','#9fd0e3'],['#40222f','#f0a8c8'],['#1f3d30','#93dcb0'],['#40302a','#e8bd96']];
+  const initials = a => { const w = String(a).replace(/^(the|a)\s+/i, '').split(/[^\p{L}\p{N}]+/u).filter(Boolean); return ((w[0]?.[0] || '') + (w.length > 1 ? w[1][0] : (w[0]?.[1] || ''))).toUpperCase() || '?'; };
+  function cover(i, size) {
+    const art = val(i, 'artist'), url = val(i, 'cover').trim();
+    const ph = () => { const [bg, fg] = PAL[[...art].reduce((s, c) => s + c.charCodeAt(0), 0) % PAL.length]; return h('div', { class: 'cv ph ' + size, style: `background:${bg};color:${fg}`, 'aria-hidden': 'true', text: initials(art) }); };
+    if (!/^https?:\/\//i.test(url)) return ph();
+    const img = h('img', { class: 'cv ' + size, src: url, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' });
+    img.addEventListener('error', () => img.replaceWith(ph()));
+    return img;
+  }
+
+  /* ---------- artist list ---------- */
+  function groups() {
+    const m = new Map();
+    rows.forEach((_, i) => { const a = val(i, 'artist').trim(); if (!a) return; if (!m.has(a)) m.set(a, []); m.get(a).push(i); });
+    return [...m].map(([artist, idx]) => ({ artist, idx })).sort((x, y) => sortKey(x.artist).localeCompare(sortKey(y.artist)));
+  }
+  const FILTERS = [['all', 'All'], ['towrite', 'To write'], ['top9', 'Top 9'], ['picks', 'Picks']];
+  const filterFn = { all: () => true,
+    towrite: g => g.idx.some(i => !val(i, 'sentence').trim()),
+    top9: g => g.idx.some(i => val(i, 'top9') === 'Yes'),
+    picks: g => g.idx.some(i => val(i, 'pick') === 'Yes') };
+  function renderFilters() {
+    $('#filters').replaceChildren(...FILTERS.map(([k, label]) => h('button', { type: 'button', text: label, 'aria-pressed': String(filter === k), onclick: () => { filter = k; hi = q.value.trim() ? 0 : -1; renderFilters(); renderList(); } })));
+  }
+  function renderList() {
+    const raw = q.value.trim(), term = fold(raw), all = groups();
+    const hits = all.filter(g => filterFn[filter](g) && (!term || fold(g.artist).includes(term) || g.idx.some(i => fold(val(i, 'album')).includes(term))));
+    shown = hits.map(g => ({ g }));
+    if (raw && !all.some(g => fold(g.artist) === term)) shown.push({ add: raw });
+    if (hi >= shown.length) hi = shown.length - 1;
+    listEl.replaceChildren(...shown.map((s, k) => {
+      if (s.add) return h('li', {}, h('button', { type: 'button', class: 'item newone' + (k === hi ? ' hi' : ''), 'data-k': k },
+        h('span', { class: 'cv s ph', style: 'background:#33260d;color:#f0a13a', text: '+' }), h('span', { class: 'nm', text: `Add “${s.add}” as a new artist` }), h('span')));
+      const n = s.g.idx.length, written = s.g.idx.filter(i => val(i, 'sentence').trim()).length;
+      const first = s.g.idx.find(i => /^https?:\/\//i.test(val(i, 'cover').trim())) ?? s.g.idx[0];
+      const marks = [];
+      if (s.g.idx.some(i => val(i, 'top9') === 'Yes')) marks.push(h('span', { class: 'mk top', title: 'Has a Top 9 album', text: 'Top 9' }));
+      if (s.g.idx.some(i => val(i, 'pick') === 'Yes')) marks.push(h('span', { class: 'mk pick', title: 'Has a genre pick', text: 'Pick' }));
+      return h('li', {}, h('button', { type: 'button', class: 'item' + (k === hi ? ' hi' : ''), 'data-k': k, 'aria-current': s.g.artist === selected ? 'true' : null },
+        cover(first, 's'),
+        h('span', {}, h('span', { class: 'nm', text: s.g.artist }), h('span', { class: 'meta', text: `${n} album${n === 1 ? '' : 's'}, ${written === 0 ? 'none written' : written === n ? 'all written' : written + ' written'}` })),
+        h('span', { class: 'marks' }, ...marks)));
+    }));
+    if (hi >= 0) listEl.querySelector('button.hi')?.scrollIntoView({ block: 'nearest' });
+  }
+  function setView(v) { body.dataset.view = v; if (v === 'list') listEl.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' }); }
+  function choose(s) {
+    if (!s) return;
+    if (s.add) { const i = addRow(s.add); touched.add(s.add); markDirty(); selected = s.add; q.value = ''; hi = -1; renderList(); renderEditor(); enterEditor(); focusAlbum(i); refreshStats(); return; }
+    selected = s.g.artist;
+    if (isNarrow()) { q.value = ''; hi = -1; }
+    renderList(); renderEditor(); enterEditor(); editor.scrollTop = 0;
+  }
+  function enterEditor() {
+    setView('editor');
+    if (isNarrow() && !pushed) { try { history.pushState({ v: 'editor' }, ''); pushed = true; } catch (_) {} }
+  }
+  function leaveEditor() { if (pushed) { pushed = false; try { history.back(); return; } catch (_) {} } setView('list'); }
+  window.addEventListener('popstate', () => { pushed = false; setView('list'); });
+  $('#btnBack').addEventListener('click', leaveEditor);
+  listEl.addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b) choose(shown[+b.dataset.k]); });
+  q.addEventListener('input', () => { hi = q.value.trim() ? 0 : -1; renderList(); });
+  q.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); hi = Math.min(hi + 1, shown.length - 1); renderList(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); hi = Math.max(hi - 1, 0); renderList(); }
+    else if (e.key === 'Enter') { e.preventDefault(); choose(shown[hi >= 0 ? hi : 0]); }
+    else if (e.key === 'Escape') { q.value = ''; hi = -1; renderList(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !q.disabled && body.dataset.state === 'app') {
+      e.preventDefault(); if (isNarrow()) leaveEditor(); q.focus(); q.select();
+    }
+  });
+
+  /* ---------- editor ---------- */
+  function addRow(artist) {
+    const r = new Array(header.length).fill(''); rows.push(r); const i = rows.length - 1;
+    setVal(i, 'artist', artist); setVal(i, 'year', '2026'); setVal(i, 'added', today()); return i;
+  }
+  function ringsSvg() { const v = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); v.setAttribute('viewBox', '0 0 64 64'); v.setAttribute('aria-hidden', 'true'); v.innerHTML = '<use href="#rings"/>'; return v; }
+  const focusAlbum = i => editor.querySelector(`#r${i}-album`)?.focus();
+  const autogrow = el => { el.style.height = 'auto'; el.style.height = Math.max(96, el.scrollHeight + 2) + 'px'; };
+  function tf(i, key, label, o = {}) {
+    if (col[key] == null) return null;
+    const id = `r${i}-${key}`;
+    const input = o.area ? h('textarea', { id, rows: 3 }) : h('input', { id, type: 'text', placeholder: o.ph || '', autocapitalize: 'none', spellcheck: o.area ? 'true' : 'false' });
+    input.value = val(i, key);
+    input.addEventListener(o.commit || 'input', () => onEdit(i, key, input.value));
+    if (o.area) input.addEventListener('input', () => autogrow(input));
+    return h('div', { class: 'f' }, h('label', { for: id, text: label }), input, o.extra);
+  }
+  function sf(i, key, label, options, blank) {
+    if (col[key] == null) return null;
+    const id = `r${i}-${key}`, cur = val(i, key), opts = [...options]; if (cur && !opts.includes(cur)) opts.push(cur);
+    const sel = h('select', { id }, h('option', { value: '', text: blank }), ...opts.map(o => h('option', { value: o, text: o })));
+    sel.value = cur; sel.addEventListener('change', () => onEdit(i, key, sel.value));
+    return h('div', { class: 'f' }, h('label', { for: id, text: label }), sel, key === 'pick' ? h('span', { class: 'note', 'data-note': 'pick' }) : null);
+  }
+  function card(i) {
+    const el = h('article', { class: 'album', 'data-row': i },
+      h('div', { class: 'cvslot' }),
+      h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' })),
+      h('div', { class: 'fields' },
+        h('div', { class: 'row r2' }, tf(i, 'artist', 'Artist', { commit: 'change' }), tf(i, 'album', 'Album')),
+        h('div', { class: 'row r5' }, sf(i, 'genre', 'Genre', genreList(), 'Not set'), sf(i, 'type', 'Type', TYPES, 'Not set (counts as LP)'),
+          sf(i, 'top9', 'Top 9', ['Yes'], 'No'), sf(i, 'pick', 'Genre pick', ['Yes'], 'No'), tf(i, 'year', 'Year')),
+        h('div', { class: 'row' }, tf(i, 'sentence', 'Sentence', { area: true, extra: h('span', { class: 'count', 'data-count': '' }) })),
+        h('div', { class: 'row r2' }, tf(i, 'listen', 'Listen URL', { ph: 'Album link' }), tf(i, 'cover', 'Cover URL', { ph: 'Image link' })),
+        h('div', { class: 'row r2' }, tf(i, 'writeup', 'Write-up URL', { ph: 'Leave blank if there is none' }), tf(i, 'added', 'Date added', { ph: 'yyyy-mm-dd' }))));
+    refreshCard(el, i); return el;
+  }
+  function renderEditor() {
+    if (selected == null) {
+      editor.replaceChildren(h('div', { class: 'empty' },
+        ringsSvg(),
+        h('strong', { text: rows.length ? 'Pick an artist' : 'No list open' }),
+        rows.length ? 'Search or scroll the list. Their albums open here with everything already in the file.' : 'Connect to GitHub or open a CSV to begin.'));
+      return;
+    }
+    const idx = rows.map((_, i) => i).filter(i => val(i, 'artist').trim() === selected);
+    editor.replaceChildren(
+      h('h2', { class: 'artist-h', text: selected }),
+      h('p', { class: 'sub', text: `${idx.length} album${idx.length === 1 ? '' : 's'} in the list` }),
+      ...idx.map(card),
+      h('button', { class: 'addrow', type: 'button', text: `Add another album by ${selected}`, onclick: () => {
+        const i = addRow(selected); touched.add(selected); markDirty(); renderEditor(); renderList(); focusAlbum(i); refreshStats(); } }));
+    editor.querySelectorAll('textarea').forEach(autogrow);
+  }
+  function pickRivals(i) {
+    if (val(i, 'pick') !== 'Yes' || !val(i, 'genre')) return [];
+    return rows.map((_, j) => j).filter(j => j !== i && val(j, 'genre') === val(i, 'genre') && val(j, 'pick') === 'Yes');
+  }
+  function refreshCard(el, i) {
+    el.classList.toggle('top9', val(i, 'top9') === 'Yes'); el.classList.toggle('ispick', val(i, 'pick') === 'Yes');
+    el.querySelector('.atitle').textContent = val(i, 'album') || 'Untitled album';
+    const slot = el.querySelector('.cvslot'), url = val(i, 'cover').trim();
+    if (slot.dataset.url !== url || !slot.firstChild) { slot.dataset.url = url; slot.replaceChildren(cover(i, 'm')); }
+    const tags = el.querySelector('.tags'); tags.replaceChildren();
+    if (val(i, 'top9') === 'Yes') tags.append(h('span', { class: 'tag top', text: 'Top 9' }));
+    if (val(i, 'pick') === 'Yes') tags.append(h('span', { class: 'tag pick', text: 'Genre pick' }));
+    const t = val(i, 'type');
+    if (t && !SHOWN_TYPES.includes(t)) tags.append(h('span', { class: 'tag off', text: `${t}, left off the page` }));
+    else if (t === 'EP') tags.append(h('span', { class: 'tag', text: 'EP' }));
+    const note = el.querySelector('[data-note="pick"]');
+    if (note) { const r = pickRivals(i); note.textContent = r.length ? `${r.map(j => val(j, 'artist')).join(', ')} already has the ${val(i, 'genre')} pick.` : ''; }
+    const c = el.querySelector('[data-count]');
+    if (c) { const n = val(i, 'sentence').trim().split(/\s+/).filter(Boolean).length; c.textContent = n ? `${n} word${n === 1 ? '' : 's'}` : ''; }
+  }
+  function onEdit(i, key, v) {
+    setVal(i, key, v); touched.add(val(i, 'artist').trim() || 'new artist'); markDirty();
+    if (key === 'artist') { selected = v.trim() || selected; renderEditor(); renderList(); refreshStats(); return; }
+    editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row));
+    refreshStats(); renderList();
+  }
+
+  /* ---------- progress chips ---------- */
+  function refreshStats() {
+    const chips = $('#chips');
+    if (!rows.length) { chips.replaceChildren(); return; }
+    const all = rows.map((_, i) => i);
+    const written = all.filter(i => val(i, 'sentence').trim()).length;
+    const top = all.filter(i => val(i, 'top9') === 'Yes').length;
+    const per = {}; all.forEach(i => { if (val(i, 'pick') === 'Yes') per[val(i, 'genre')] = (per[val(i, 'genre')] || 0) + 1; });
+    const gl = genreList(), have = gl.filter(g => per[g]).length, dupes = Object.keys(per).filter(g => per[g] > 1);
+    const pct = rows.length ? Math.round(written / rows.length * 100) : 0;
+    const chip = (label, value, cls, onclick, extra = {}) => h('button', { type: 'button', class: 'chip ' + cls, onclick, ...extra }, h('small', { text: label }), h('strong', { text: value }));
+    chips.replaceChildren(
+      chip('Written', `${written} of ${rows.length}`, '', () => { filter = 'towrite'; renderFilters(); renderList(); if (isNarrow()) leaveEditor(); }, { style: `--p:${pct}%`, title: 'Show artists with albums still to write' }),
+      chip('Top 9', `${top} of 9`, top === 9 ? 'ok' : top > 9 ? 'bad' : '', openReview, { title: 'Review the Top 9' }),
+      chip('Picks', `${have} of ${GENRES.length}${dupes.length ? ', ' + dupes.length + ' doubled' : ''}`, dupes.length ? 'bad' : (have >= GENRES.length ? 'ok' : ''), openReview, { title: 'Review genre picks' }));
+    if (dlgOpen($('#review'))) renderReview();
+  }
+
+  /* ---------- review sheet ---------- */
+  const reviewEl = $('#review'), reviewBody = $('#reviewBody');
+  const byArtist = (a, b) => sortKey(val(a, 'artist')).localeCompare(sortKey(val(b, 'artist'))) || val(a, 'album').localeCompare(val(b, 'album'));
+  function openReview() { renderReview(); openDlg(reviewEl); }
+  $('#reviewClose').addEventListener('click', () => closeDlg(reviewEl));
+  function goTo(i, key) {
+    closeDlg(reviewEl); selected = val(i, 'artist').trim(); q.value = ''; hi = -1;
+    renderList(); renderEditor(); enterEditor();
+    const el = editor.querySelector(`.album[data-row="${i}"]`); if (!el) return;
+    el.scrollIntoView({ block: 'start' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1800);
+    (el.querySelector(`#r${i}-${key}`) || el.querySelector('input'))?.focus({ preventScroll: true });
+  }
+  function clearFlag(i, key) {
+    setVal(i, key, ''); touched.add(val(i, 'artist').trim()); markDirty();
+    if (selected != null) renderEditor(); renderList(); refreshStats();
+  }
+  const acts = (i, key) => [
+    h('button', { type: 'button', class: 'open', text: 'Open', onclick: () => goTo(i, key) }),
+    h('button', { type: 'button', text: 'Clear', 'aria-label': `Clear ${key === 'top9' ? 'Top 9' : 'genre pick'} for ${val(i, 'artist')}`, onclick: () => clearFlag(i, key) })];
+  function renderReview() {
+    const all = rows.map((_, i) => i);
+    const tops = all.filter(i => val(i, 'top9') === 'Yes').sort(byArtist);
+    const msg = tops.length === 9 ? 'Exactly 9. Nothing to fix.' : tops.length > 9 ? `${tops.length - 9} too many. Clear ${tops.length - 9} to get to 9.` : `${9 - tops.length} short of 9. Open an album and set Top 9 to Yes.`;
+    const slots = Math.max(9, tops.length), tiles = [];
+    for (let k = 0; k < slots; k++) {
+      const i = tops[k];
+      tiles.push(i == null
+        ? h('div', { class: 'tile empty-slot' }, h('div', { class: 'cv', text: 'Open slot' }))
+        : h('div', { class: 'tile' }, cover(i, 'l'), h('div', { class: 'who' }, h('strong', { text: val(i, 'artist') }), h('em', { text: val(i, 'album') })), h('div', { class: 'acts' }, ...acts(i, 'top9'))));
+    }
+    const out = [h('h3', { text: 'Top 9' }), h('p', { class: 'rsum ' + (tops.length === 9 ? 'good' : 'bad'), text: `${tops.length} marked. ${msg}` }), h('div', { class: 'wall' }, ...tiles), h('h3', { text: 'Genre picks' })];
+    const pickRows = all.filter(i => val(i, 'pick') === 'Yes'), gl = genreList();
+    gl.forEach(g => {
+      const mine = pickRows.filter(i => val(i, 'genre') === g).sort(byArtist);
+      const written = all.filter(i => val(i, 'genre') === g && val(i, 'sentence').trim()).length;
+      out.push(h('div', { class: 'rgenre', text: g }));
+      if (!mine.length) out.push(h('div', { class: 'rnone' }, 'No pick yet', h('small', { text: `${written} album${written === 1 ? '' : 's'} with a sentence in this genre` })));
+      else {
+        if (mine.length > 1) out.push(h('p', { class: 'rsum bad', text: `${mine.length} picks. Keep one and clear the rest.` }));
+        mine.forEach(i => out.push(h('div', { class: 'pickrow' }, cover(i, 's'),
+          h('div', { class: 'who' }, h('strong', { text: val(i, 'artist') }), h('em', { text: val(i, 'album') })), ...acts(i, 'pick'))));
+      }
+    });
+    const stray = pickRows.filter(i => !gl.includes(val(i, 'genre'))).sort(byArtist);
+    if (stray.length) {
+      out.push(h('div', { class: 'rgenre', text: 'Marked as a pick but with no genre' }));
+      stray.forEach(i => out.push(h('div', { class: 'pickrow' }, cover(i, 's'), h('div', { class: 'who' }, h('strong', { text: val(i, 'artist') }), h('em', { text: val(i, 'album') })), ...acts(i, 'pick'))));
+    }
+    reviewBody.replaceChildren(...out);
+  }
+
+  /* ---------- menu ---------- */
+  const menu = $('#menu');
+  $('#btnMenu').addEventListener('click', () => {
+    $('#menuWhere').textContent = store ? (store.kind === 'github' ? `${store.label}, ${store.name}` : store.label) : 'Not connected';
+    $('#mReload').hidden = !(store && store.kind === 'github'); $('#mCopy').disabled = !rows.length;
+    openDlg(menu);
+  });
+  $('#mClose').addEventListener('click', () => closeDlg(menu));
+  $('#mReload').addEventListener('click', () => { closeDlg(menu); refreshRemote(true); });
+  $('#mCopy').addEventListener('click', () => { closeDlg(menu); downloadCopy(); });
+  $('#mSettings').addEventListener('click', () => { closeDlg(menu); showWelcome(); });
+  $('#mForget').addEventListener('click', async () => {
+    closeDlg(menu);
+    if (dirty && store && store.kind !== 'copy') await save();
+    try { localStorage.removeItem(CFG_KEY); } catch (_) {}
+    store = null; version = null; rows = []; header = []; selected = null; q.disabled = true;
+    renderList(); renderEditor(); refreshStats(); setState('Not connected'); showWelcome(); toast('This device has been forgotten');
+  });
+
+  /* ---------- start ---------- */
+  renderFilters(); renderEditor();
+  (async () => {
+    const cfg = readCfg();
+    if (cfg && cfg.token) {
+      try { await useStore(githubStore(cfg)); } catch (e) { showWelcome(e.message, cfg); }
+    } else showWelcome();
+    if (canFS()) {
+      const hd = await recall();
+      if (hd) {
+        const b = $('#btnReconnect'); b.textContent = 'Reconnect to ' + hd.name; b.hidden = false;
+        b.addEventListener('click', async () => { try { if (await ensurePermission(hd)) await useStore(localStore(hd)); } catch (e) { showWelcome('Could not reconnect: ' + e.message); } });
+      }
+    }
+  })();
+})();
+</script>
+</body>
+</html>
