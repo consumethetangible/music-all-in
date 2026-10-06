@@ -1,8 +1,10 @@
 # All-In Music Logger
 
-A small web app for logging a year of metal listening, one sentence per album, and the page layout that publishes it on Nine Circles (ninecircles.co) as the "All-In" year-end post.
+A small web app for logging a year of music listening, 1-2 sentences per album, capturing album art, Bandcamp or other listening links, and references to reviews.
 
-The plan for 2026: a short **Top 9** post, plus one **All-In** post with a sentence for every metal album listened to this year (160+, currently 182 imported). The logger is where the list gets written. The CSV is the master copy. The WordPress page is built from the CSV.
+The plan for 2026: leverage this for my Nine Circles end-of-year post.  The plan is to show off every single album I listened to in the year, with some kind of badge that shows and/or jumps to my Top 9 ranked albums (the "inner circle" if you will) with every other album (the "outer circle") arranged alphabetically within one of several genre categories.  Currently at ~182 albums based on the last import). The logger is where the list gets written. The CSV is the master copy. The WordPress page is built from the CSV.
+
+The page is hosted on Github Oages at: https://consumethetangible.github.io/music-all-in/
 
 ## How the pieces fit
 
