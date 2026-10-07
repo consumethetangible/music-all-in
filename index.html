@@ -174,6 +174,10 @@ input.rnkin::-webkit-inner-spin-button{display:none}
 .listen .lrow{display:flex;gap:8px;align-items:stretch}
 .listen .lrow input{flex:1;min-width:0}
 .listen input.blank{border-color:var(--amber);border-style:dashed}
+.pill.ghost.danger{margin-left:auto;color:var(--err);font-weight:600}
+.flink{margin:12px 0 0}.flink label{display:block;font-size:13px;font-weight:600;color:var(--mute);margin-bottom:5px}
+.flink .lrow{display:flex;gap:8px}.flink input{flex:1;min-width:0;min-height:42px;padding:8px 10px;font:inherit;font-size:15px;border:1px solid var(--line2);border-radius:8px;background:var(--bg);color:var(--ink)}
+.flink button{min-height:42px}
 .openlink{flex:none;display:flex;align-items:center;padding:0 14px;border:1px solid var(--line2);border-radius:8px;background:var(--raised);color:var(--ink);text-decoration:none;font-weight:600;white-space:nowrap}
 .openlink:hover{border-color:var(--amber)}
 .openlink[aria-disabled="true"]{opacity:.4;pointer-events:none}
@@ -941,28 +945,40 @@ body:not([data-state="loading"]) .loading{display:none}
     const old = el.querySelector('.finder'); if (old) { old.remove(); return; }
     const det = el.querySelector('details.more'); if (det) { det.open = true; openDetails.add(i); }
     const term = [val(i, 'artist').trim(), val(i, 'album').trim()].filter(Boolean).join(' ');
-    const body = h('div', { class: 'fbody', text: 'Searching Apple Music…' });
+    const body = h('div', { class: 'fbody', text: 'Searching Apple Music\u2026' });
+    const setCover = url => { const inp = el.querySelector(`#r${i}-cover`); if (inp) inp.value = url; onEdit(i, 'cover', url); box.remove(); toast('Cover set'); };
+    const link = h('input', { type: 'text', placeholder: 'https://music.apple.com/us/album/\u2026', autocapitalize: 'none', spellcheck: 'false', 'aria-label': 'Apple Music album link' });
+    const linkMsg = h('span', { class: 'note soft' });
+    const useLink = async () => {
+      const v = link.value.trim(); if (!v) return; linkMsg.textContent = 'Looking that up\u2026';
+      try { setCover(await appleFromLink(v)); } catch (e) { linkMsg.textContent = e.message || 'Could not use that link.'; }
+    };
+    link.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); useLink(); } });
+    link.addEventListener('paste', () => setTimeout(useLink, 0));
     const box = h('div', { class: 'finder' },
       h('div', { class: 'fhead' }, h('strong', { text: 'Pick a cover' }), h('button', { type: 'button', class: 'ghost', text: 'Close', onclick: () => box.remove() })),
       body,
-      h('p', { class: 'fnote' }, 'Not the right one? ', h('a', { href: `https://bandcamp.com/search?q=${enc(term)}&item_type=a`, target: '_blank', rel: 'noopener', text: 'Search Bandcamp' }),
+      h('div', { class: 'flink' }, h('label', { text: 'Or paste an Apple Music album link' }), h('div', { class: 'lrow' }, link, h('button', { type: 'button', text: 'Use', onclick: useLink })), linkMsg),
+      h('p', { class: 'fnote' }, 'In the Music app: right-click the album, Share, Copy Link. Or ', h('a', { href: `https://bandcamp.com/search?q=${enc(term)}&item_type=a`, target: '_blank', rel: 'noopener', text: 'search Bandcamp' }),
         ', right-click the cover, copy the image address, and paste it into Cover URL (under Details).'));
     el.querySelector('.fields').prepend(box);
     if (!term) { body.textContent = 'Add an artist and album first.'; return; }
-    fetch(`https://itunes.apple.com/search?term=${enc(term)}&media=music&entity=album&limit=8`)
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(j => {
-        const res = (j.results || []).filter(r => r.artworkUrl100);
-        if (!res.length) { body.textContent = 'Nothing found on Apple Music.'; return; }
-        body.replaceChildren(h('div', { class: 'fgrid' }, ...res.map(r => h('button', { type: 'button', class: 'fopt',
-          onclick: () => {
-            const url = r.artworkUrl100.replace(/\d+x\d+bb/, '600x600bb'), inp = el.querySelector(`#r${i}-cover`);
-            if (inp) inp.value = url; onEdit(i, 'cover', url); box.remove(); toast('Cover set');
-          } },
-          h('img', { src: r.artworkUrl100, alt: '', referrerpolicy: 'no-referrer' }),
-          h('span', {}, h('strong', { text: r.collectionName })), h('em', { text: `${r.artistName}${r.releaseDate ? ', ' + r.releaseDate.slice(0, 4) : ''}` })))));
-      })
-      .catch(() => { body.textContent = 'Could not reach Apple Music. Try Bandcamp below.'; });
+    appleCandidates(val(i, 'artist').trim(), val(i, 'album').trim(), true).then(res => {
+      if (!res.length) { body.textContent = 'Apple Music search did not find it. Very new releases can take a while to show up in search. Paste an album link below instead.'; return; }
+      body.replaceChildren(h('div', { class: 'fgrid' }, ...res.slice(0, 12).map(r => h('button', { type: 'button', class: 'fopt', onclick: () => setCover(bigArt(r.art)) },
+        h('img', { src: r.art, alt: '', referrerpolicy: 'no-referrer' }), h('span', {}, h('strong', { text: r.name })), h('em', { text: `${r.artist}${r.year ? ', ' + r.year : ''}` })))));
+    }).catch(() => { body.textContent = 'Could not reach Apple Music. Paste an album link below, or try Bandcamp.'; });
+  }
+  function deleteAlbum(i) {
+    const artist = val(i, 'artist').trim(), album = val(i, 'album').trim() || 'this untitled album';
+    if (!confirm(`Delete \u201c${album}\u201d by ${artist || 'this artist'} from the list?\n\nThe row is removed from the CSV. GitHub keeps the earlier version, so it can be restored from history.`)) return;
+    const order = rankedOrder(); if (order.includes(i)) applyOrder(order.filter(j => j !== i));
+    rows.splice(i, 1);
+    const shift = set => { const n = [...set].filter(x => x !== i).map(x => x > i ? x - 1 : x); set.clear(); n.forEach(x => set.add(x)); };
+    shift(addedIds); shift(openDetails);
+    touched.add(`${artist || 'list'} (removed an album)`); markDirty();
+    if (!rows.some((_, j) => val(j, 'artist').trim() === artist)) { selected = null; renderEditor(); if (isNarrow()) leaveEditor(); } else renderEditor();
+    renderList(); refreshStats(); toast(`Deleted \u201c${album}\u201d`);
   }
   function listenRow(i) {
     if (col.listen == null) return null;
@@ -976,7 +992,7 @@ body:not([data-state="loading"]) .loading{display:none}
     const el = h('article', { class: 'album', 'data-row': i },
       h('div', { class: 'cvslot' }, h('div', { class: 'cvimg' }), col.cover != null ? h('button', { type: 'button', class: 'fcov', text: 'Find cover', onclick: () => finderFor(el, i) }) : null),
       h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' }),
-        h('div', { class: 'pills' }, rankPill(i), pill(i, 'pick', 'Genre pick', 'pick'), h('button', { type: 'button', class: 'pill ghost', text: 'Ranking ›', onclick: () => showRanking(i) })),
+        h('div', { class: 'pills' }, rankPill(i), pill(i, 'pick', 'Genre pick', 'pick'), h('button', { type: 'button', class: 'pill ghost', text: 'Ranking \u203a', onclick: () => showRanking(i) }), h('button', { type: 'button', class: 'pill ghost danger', text: 'Delete album', onclick: () => deleteAlbum(i) })),
         h('span', { class: 'note', 'data-note': 'pick' })),
       h('div', { class: 'fields' },
         listenRow(i),
@@ -1151,17 +1167,49 @@ body:not([data-state="loading"]) .loading{display:none}
     addedIds.add(i); touched.add(a); markDirty(); refreshStats(); return i;
   }
   const baseTitle = t => fold(String(t).replace(/\s-\s(EP|Single)$/i, '').replace(/\s*[\(\[].*?[\)\]]/g, '')).trim();
+  const APPLE = 'https://itunes.apple.com', sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function appleGet(path) {
+    const r = await fetch(APPLE + path); if (!r.ok) throw new Error('Apple Music said ' + r.status);
+    return (await r.json()).results || [];
+  }
+  const asCand = x => (x.artworkUrl100 && x.collectionName) ? { id: String(x.collectionId || ''), artist: x.artistName || '', name: x.collectionName, year: (x.releaseDate || '').slice(0, 4), art: x.artworkUrl100 } : null;
+  const isArtist = (artist, c) => { const fa = fold(artist), fx = fold(c.artist); return !!fx && (fx.includes(fa) || fa.includes(fx)); };
+  function isMatch(artist, album, c) {
+    const fb = baseTitle(album), n = baseTitle(c.name);
+    return isArtist(artist, c) && !!n && !!fb && (n === fb || n.includes(fb) || fb.includes(n));
+  }
+  /* Apple's search is picky, so ask in several ways: artist + album, album alone, everything by the artist, then songs.
+     `full` keeps going for the cover picker; otherwise it stops at the first confident match. */
+  async function appleCandidates(artist, album, full) {
+    const found = new Map(), q1 = [artist, album].filter(Boolean).join(' ');
+    const add = list => list.map(asCand).filter(Boolean).forEach(c => { const k = c.id || (c.artist + '|' + c.name); if (!found.has(k)) found.set(k, c); });
+    const steps = [`/search?term=${enc(q1)}&media=music&entity=album&limit=10`];
+    if (album) steps.push(`/search?term=${enc(album)}&media=music&entity=album&limit=25`);
+    if (artist) steps.push(`/search?term=${enc(artist)}&media=music&entity=album&limit=50`);
+    steps.push(`/search?term=${enc(q1)}&media=music&entity=song&limit=20`);
+    for (let k = 0; k < steps.length; k++) {
+      if (k) await sleep(350);
+      try { add(await appleGet(steps[k])); } catch (e) { if (!found.size && k === 0) throw e; break; }
+      if (!full && [...found.values()].some(c => isMatch(artist, album, c))) break;
+    }
+    const score = c => isMatch(artist, album, c) ? 3 : isArtist(artist, c) ? 2 : 1;
+    return [...found.values()].sort((a, b) => score(b) - score(a));
+  }
+  const bigArt = u => u.replace(/\d+x\d+bb/, '600x600bb');
+  /* an Apple Music link works even when search cannot find the album */
+  async function appleFromLink(link) {
+    const m = String(link).match(/\/(\d{6,})(?:[/?#]|$)/) || String(link).match(/[?&]i=(\d+)/);
+    if (!m) throw new Error('That does not look like an Apple Music album link.');
+    const cc = (String(link).match(/music\.apple\.com\/([a-z]{2})\//i) || [])[1];
+    const res = await appleGet(`/lookup?id=${m[1]}${cc ? '&country=' + cc : ''}`);
+    const hit = res.find(x => x.artworkUrl100); if (!hit) throw new Error('Apple Music did not return artwork for that link.');
+    return bigArt(hit.artworkUrl100);
+  }
   async function lookupApple(artist, album) {
-    const r = await fetch(`https://itunes.apple.com/search?term=${enc(artist + ' ' + album)}&media=music&entity=album&limit=10`);
-    if (!r.ok) throw new Error('Apple Music said ' + r.status);
-    const fa = fold(artist), fb = baseTitle(album);
-    const hit = ((await r.json()).results || []).filter(x => x.artworkUrl100).find(x => {
-      const fx = fold(x.artistName), n = baseTitle(x.collectionName);
-      return (fx.includes(fa) || fa.includes(fx)) && n && fb && (n === fb || n.includes(fb) || fb.includes(n));
-    });
+    const hit = (await appleCandidates(artist, album, false)).find(c => isMatch(artist, album, c));
     if (!hit) return null;
-    const t = /\s-\s(EP|Single)$/i.exec(hit.collectionName);
-    return { cover: hit.artworkUrl100.replace(/\d+x\d+bb/, '600x600bb'), type: t ? (t[1].toUpperCase() === 'EP' ? 'EP' : 'Single') : 'LP' };
+    const t = /\s-\s(EP|Single)$/i.exec(hit.name);
+    return { cover: bigArt(hit.art), type: t ? (t[1].toUpperCase() === 'EP' ? 'EP' : 'Single') : 'LP' };
   }
   function applyLookup(i, res) {
     if (!res) return false; let ch = false;
@@ -1176,10 +1224,15 @@ body:not([data-state="loading"]) .loading{display:none}
   /* one at a time, with a pause, because Apple limits how fast you can ask */
   async function lookupMany(ids, onStep) {
     let ok = 0, failed = false;
-    for (let n = 0; n < ids.length; n++) {
-      try { if (applyLookup(ids[n], await lookupApple(val(ids[n], 'artist'), val(ids[n], 'album')))) ok++; } catch (_) { failed = true; break; }
+    const jobs = ids.map(i => ({ i, artist: val(i, 'artist'), album: val(i, 'album') }));
+    for (let n = 0; n < jobs.length; n++) {
+      const { i, artist, album } = jobs[n];
+      try {
+        const res = await lookupApple(artist, album);
+        if (val(i, 'artist') === artist && val(i, 'album') === album && applyLookup(i, res)) ok++;
+      } catch (_) { failed = true; break; }
       if (onStep) onStep(n + 1);
-      await new Promise(r => setTimeout(r, 500));
+      await sleep(500);
     }
     return { ok, failed };
   }
