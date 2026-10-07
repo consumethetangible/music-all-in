@@ -135,6 +135,23 @@ button.ghost{background:transparent}
 .note{display:block;margin-top:4px;font-size:12.5px;color:var(--err);font-weight:600}
 .addrow{margin-top:4px}
 
+/* ---------- add albums ---------- */
+.searchbox{display:flex;gap:8px;align-items:center}
+.searchbox #q{flex:1;min-width:0;width:auto}
+#btnAdd{flex:none;min-height:46px;padding:0 14px}
+#addDlg{width:min(560px,calc(100% - 28px));max-height:calc(100dvh - 28px)}
+.addbody{padding:6px 20px calc(20px + var(--sb));overflow:auto;max-height:calc(100dvh - 110px)}
+.addbody .filters{padding:10px 0}
+.addbody .f{margin:0 0 12px}
+.addbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.addbtns .primary{min-width:120px}
+.alog{list-style:none;margin:12px 0 0;padding:0;font-size:14px}
+.alog li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:8px;justify-content:space-between}
+.alog li small{color:var(--mute);flex:none}
+.alog li.skip{color:var(--mute)} .alog li.skip small{color:var(--warn)}
+.alog button.ghost{min-height:28px;padding:0 8px}
+@media(max-width:859px){dialog#addDlg{width:100%;max-width:none;height:100%;max-height:none;margin:0;border-radius:0;border:0}.addbody{max-height:calc(100dvh - 76px - var(--st))}}
+
 /* ---------- ranked view ---------- */
 #list li.rk{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:stretch;border-bottom:1px solid var(--line);background:transparent}
 #list li.rk button.item{border-bottom:0;padding-left:6px;padding-right:4px;gap:10px;min-width:0;overflow:hidden}
@@ -322,6 +339,7 @@ body:not([data-state="loading"]) .loading{display:none}
       <label class="sr" for="q">Search artists or albums</label>
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l5 5" stroke-linecap="round"/></svg>
       <input id="q" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Search artists or albums" disabled>
+      <button type="button" class="primary" id="btnAdd" disabled title="Add albums (press n)">+ Add</button>
     </div>
     <div class="filters" id="filters" role="group" aria-label="Filter the list"></div>
     <ul id="list"></ul>
@@ -382,6 +400,28 @@ body:not([data-state="loading"]) .loading{display:none}
     <button type="button" id="mSettings">Connection settings</button>
     <button type="button" id="mForget" class="ghost">Forget this device</button>
     <button type="button" id="mClose" class="ghost">Close</button>
+  </div>
+</dialog>
+
+<dialog id="addDlg" aria-labelledby="addTitle">
+  <div class="rhead"><h2 id="addTitle">Add albums</h2><button type="button" id="addClose">Done</button></div>
+  <div class="addbody">
+    <div class="filters" id="addTabs" role="group" aria-label="How to add"></div>
+    <form id="addOne" autocomplete="off">
+      <div class="f"><label for="aArtist">Artist</label><input id="aArtist" list="artistList" autocapitalize="words" spellcheck="false" required></div>
+      <datalist id="artistList"></datalist>
+      <div class="f"><label for="aAlbum">Album</label><input id="aAlbum" autocapitalize="words" spellcheck="false" required></div>
+      <div class="f"><label for="aGenre">Genre</label><select id="aGenre"></select></div>
+      <p class="note soft" id="aNote" role="status"></p>
+      <div class="addbtns"><button class="primary" type="submit">Add</button><button type="button" id="aOpen">Add and open</button></div>
+      <ul class="alog" id="aLog" aria-label="Added this visit"></ul>
+    </form>
+    <form id="addMany" autocomplete="off" hidden>
+      <div class="f"><label for="mText">One album per line, like “Artist - Album”</label><textarea id="mText" rows="8" spellcheck="false" placeholder="Mastodon - Hushed and Grim&#10;Windhand - Eternal Return"></textarea></div>
+      <div class="f"><label for="mGenre">Genre for all of them</label><select id="mGenre"></select></div>
+      <ul class="alog" id="mPreview" aria-live="polite"></ul>
+      <div class="addbtns"><button class="primary" type="submit" id="mGo" disabled>Add albums</button></div>
+    </form>
   </div>
 </dialog>
 
@@ -499,7 +539,7 @@ body:not([data-state="loading"]) .loading{display:none}
     const missing = Object.keys(ALIASES).filter(k => k !== 'rank' && col[k] == null);
     if (missing.length) showBanner(`These columns were not found, so their fields are hidden: ${missing.join(', ')}.`); else hideBanner();
     selected = keep && rows.some((_, i) => val(i, 'artist').trim() === keep) ? keep : null;
-    dirty = false; hi = -1; q.disabled = false; q.value = '';
+    dirty = false; hi = -1; q.disabled = false; $('#btnAdd').disabled = false; q.value = '';
     renderList(); renderEditor(); refreshStats();
   }
 
@@ -681,8 +721,10 @@ body:not([data-state="loading"]) .loading{display:none}
     rows.forEach((_, i) => { const a = val(i, 'artist').trim(); if (!a) return; if (!m.has(a)) m.set(a, []); m.get(a).push(i); });
     return [...m].map(([artist, idx]) => ({ artist, idx })).sort((x, y) => sortKey(x.artist).localeCompare(sortKey(y.artist)));
   }
-  const FILTERS = [['all', 'All'], ['ranked', 'Ranked'], ['towrite', 'To write'], ['nolink', 'Needs link'], ['top9', 'Top 9'], ['picks', 'Picks']];
+  const FILTERS = [['all', 'All'], ['ranked', 'Ranked'], ['new', 'New'], ['towrite', 'To write'], ['nolink', 'Needs link'], ['nocover', 'Needs cover'], ['top9', 'Top 9'], ['picks', 'Picks']];
   const filterFn = { all: () => true, ranked: () => true,
+    new: g => g.idx.some(i => addedIds.has(i) || val(i, 'added') === today()),
+    nocover: g => g.idx.some(i => !/^https?:\/\//i.test(val(i, 'cover').trim())),
     nolink: g => g.idx.some(i => !/^https?:\/\//i.test(val(i, 'listen').trim())),
     towrite: g => g.idx.some(i => !val(i, 'sentence').trim()),
     top9: g => g.idx.some(i => val(i, 'top9') === 'Yes'),
@@ -700,7 +742,11 @@ body:not([data-state="loading"]) .loading{display:none}
       const hits = all.filter(g => filterFn[filter](g) && (!term || fold(g.artist).includes(term) || g.idx.some(i => fold(val(i, 'album')).includes(term))));
       shown = hits.map(g => ({ g }));
       if (raw && !all.some(g => fold(g.artist) === term)) shown.push({ add: raw });
+      const pa = raw.match(/^(.+?)\s+[-\u2013\u2014]\s+(.+)$/);
+      if (pa && findDupe(pa[1].trim(), pa[2].trim()) < 0) shown.unshift({ addAlbum: { artist: artistCanon(pa[1]), album: pa[2].trim() } });
       els = shown.map((s, k) => {
+        if (s.addAlbum) return h('li', {}, h('button', { type: 'button', class: 'item newone' + (k === hi ? ' hi' : ''), 'data-k': k },
+          h('span', { class: 'cv s ph', style: 'background:#33260d;color:#f0a13a', text: '+' }), h('span', { class: 'nm', text: `Add \u201c${s.addAlbum.album}\u201d by ${s.addAlbum.artist}` }), h('span')));
         if (s.add) return addLi(s.add, k);
         const n = s.g.idx.length, written = s.g.idx.filter(i => val(i, 'sentence').trim()).length;
         const first = s.g.idx.find(i => /^https?:\/\//i.test(val(i, 'cover').trim())) ?? s.g.idx[0];
@@ -824,6 +870,7 @@ body:not([data-state="loading"]) .loading{display:none}
       const el = editor.querySelector(`.album[data-row="${i}"]`); if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1400); }
       return;
     }
+    if (s.addAlbum) { const i = createAlbum(s.addAlbum.artist, s.addAlbum.album, ''); q.value = ''; hi = -1; openRow(i); lookupMany([i]); return; }
     if (s.add) { const i = addRow(s.add); touched.add(s.add); markDirty(); selected = s.add; q.value = ''; hi = -1; renderList(); renderEditor(); enterEditor(); focusAlbum(i); refreshStats(); return; }
     selected = s.g.artist;
     if (isNarrow()) { q.value = ''; hi = -1; }
@@ -847,6 +894,8 @@ body:not([data-state="loading"]) .loading{display:none}
   document.addEventListener('keydown', e => {
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !q.disabled && body.dataset.state === 'app') {
       e.preventDefault(); if (isNarrow()) leaveEditor(); q.focus(); q.select();
+    } else if (e.key === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !q.disabled && body.dataset.state === 'app' && !document.querySelector('dialog[open]')) {
+      e.preventDefault(); openAdd();
     }
   });
 
@@ -1092,6 +1141,112 @@ body:not([data-state="loading"]) .loading{display:none}
     reviewBody.replaceChildren(...out);
   }
 
+  /* ---------- adding albums ---------- */
+  const addDlg = $('#addDlg'), addedIds = new Set(); let lastGenre = '';
+  const artistCanon = name => { const f = fold(name), hit = groups().find(g => fold(g.artist) === f); return hit ? hit.artist : String(name).trim(); };
+  const findDupe = (artist, album) => rows.findIndex((_, i) => fold(val(i, 'artist')).trim() === fold(artist).trim() && fold(val(i, 'album')).trim() === fold(album).trim());
+  function createAlbum(artist, album, genre) {
+    const a = artistCanon(artist), i = addRow(a);
+    setVal(i, 'album', album.trim()); if (genre && col.genre != null) setVal(i, 'genre', genre);
+    addedIds.add(i); touched.add(a); markDirty(); refreshStats(); return i;
+  }
+  const baseTitle = t => fold(String(t).replace(/\s-\s(EP|Single)$/i, '').replace(/\s*[\(\[].*?[\)\]]/g, '')).trim();
+  async function lookupApple(artist, album) {
+    const r = await fetch(`https://itunes.apple.com/search?term=${enc(artist + ' ' + album)}&media=music&entity=album&limit=10`);
+    if (!r.ok) throw new Error('Apple Music said ' + r.status);
+    const fa = fold(artist), fb = baseTitle(album);
+    const hit = ((await r.json()).results || []).filter(x => x.artworkUrl100).find(x => {
+      const fx = fold(x.artistName), n = baseTitle(x.collectionName);
+      return (fx.includes(fa) || fa.includes(fx)) && n && fb && (n === fb || n.includes(fb) || fb.includes(n));
+    });
+    if (!hit) return null;
+    const t = /\s-\s(EP|Single)$/i.exec(hit.collectionName);
+    return { cover: hit.artworkUrl100.replace(/\d+x\d+bb/, '600x600bb'), type: t ? (t[1].toUpperCase() === 'EP' ? 'EP' : 'Single') : 'LP' };
+  }
+  function applyLookup(i, res) {
+    if (!res) return false; let ch = false;
+    if (col.cover != null && !val(i, 'cover').trim()) { setVal(i, 'cover', res.cover); ch = true; }
+    if (col.type != null && !val(i, 'type')) { setVal(i, 'type', res.type); ch = true; }
+    if (!ch) return false;
+    markDirty();
+    const el = editor.querySelector(`.album[data-row="${i}"]`);
+    if (el) { const ci = el.querySelector(`#r${i}-cover`); if (ci) ci.value = val(i, 'cover'); const ty = el.querySelector(`#r${i}-type`); if (ty) ty.value = val(i, 'type'); refreshCard(el, i); }
+    renderList(); return true;
+  }
+  /* one at a time, with a pause, because Apple limits how fast you can ask */
+  async function lookupMany(ids, onStep) {
+    let ok = 0, failed = false;
+    for (let n = 0; n < ids.length; n++) {
+      try { if (applyLookup(ids[n], await lookupApple(val(ids[n], 'artist'), val(ids[n], 'album')))) ok++; } catch (_) { failed = true; break; }
+      if (onStep) onStep(n + 1);
+      await new Promise(r => setTimeout(r, 500));
+    }
+    return { ok, failed };
+  }
+  function openRow(i) {
+    selected = val(i, 'artist').trim(); q.value = ''; hi = -1;
+    renderList(); renderEditor(); enterEditor();
+    const el = editor.querySelector(`.album[data-row="${i}"]`);
+    if (el) { el.scrollIntoView({ block: 'start' }); editor.querySelector(`#r${i}-sentence`)?.focus({ preventScroll: true }); }
+  }
+  const SEP = /^(.+?)(?:\s+[-\u2013\u2014]\s+|\t+|\s*\|\s*)(.+)$/;
+  function parseList(text) {
+    return text.split(/\r?\n/).map(l => l.trim().replace(/^(\d+[.)]\s+|[-*\u2022]\s+)/, '')).filter(Boolean)
+      .map(l => { const m = l.match(SEP); return m ? { artist: artistCanon(m[1]), album: m[2].trim(), line: l } : { bad: l }; });
+  }
+  function fillGenres() {
+    const opts = [h('option', { value: '', text: 'Not set' }), ...genreList().map(g => h('option', { value: g, text: g }))];
+    ['#aGenre', '#mGenre'].forEach(id => { const el = $(id); el.replaceChildren(...opts.map(o => o.cloneNode(true))); el.value = lastGenre; });
+    $('#artistList').replaceChildren(...groups().map(g => h('option', { value: g.artist })));
+  }
+  let addTab = 'one';
+  function setAddTab(t) {
+    addTab = t; $('#addOne').hidden = t !== 'one'; $('#addMany').hidden = t !== 'many';
+    $('#addTabs').replaceChildren(...[['one', 'One album'], ['many', 'Paste a list']].map(([k, label]) => h('button', { type: 'button', text: label, 'aria-pressed': String(addTab === k), onclick: () => { setAddTab(k); (k === 'one' ? $('#aArtist') : $('#mText')).focus(); } })));
+  }
+  function openAdd(pre = {}) {
+    if (!store || !header.length) return;
+    fillGenres(); setAddTab(pre.tab || 'one'); $('#aArtist').value = pre.artist || ''; $('#aAlbum').value = pre.album || ''; $('#aNote').replaceChildren();
+    openDlg(addDlg); (pre.tab === 'many' ? $('#mText') : $('#aArtist')).focus();
+  }
+  $('#btnAdd').addEventListener('click', () => openAdd());
+  $('#addClose').addEventListener('click', () => closeDlg(addDlg));
+  function logLine(text, extra, cls) { const li = h('li', { class: cls || '' }, h('span', { text }), h('small', { text: extra || '' })); return li; }
+  function addOne(mode) {
+    const note = $('#aNote'), a = $('#aArtist').value.trim(), b = $('#aAlbum').value.trim();
+    if (!a || !b) { note.textContent = 'Fill in both the artist and the album.'; return; }
+    const artist = artistCanon(a), d = findDupe(artist, b);
+    if (d >= 0) { note.replaceChildren(`That one is already in your list. `, h('button', { type: 'button', class: 'ghost', text: 'Open it', onclick: () => { closeDlg(addDlg); openRow(d); } })); return; }
+    note.replaceChildren(); lastGenre = $('#aGenre').value;
+    const i = createAlbum(artist, b, lastGenre), li = logLine(`${artist}, ${b}`, 'Added. Looking for the cover…');
+    $('#aLog').prepend(li); renderList();
+    lookupMany([i]).then(r => { li.lastChild.textContent = r.failed ? 'Added. Cover lookup failed.' : val(i, 'cover') ? 'Added with cover' : 'Added. No cover found.'; });
+    if (mode === 'open') { closeDlg(addDlg); openRow(i); }
+    else { $('#aArtist').value = ''; $('#aAlbum').value = ''; $('#aArtist').focus(); }
+  }
+  $('#addOne').addEventListener('submit', e => { e.preventDefault(); addOne('more'); });
+  $('#aOpen').addEventListener('click', () => addOne('open'));
+  function previewMany() {
+    const items = parseList($('#mText').value), seen = new Set(); let n = 0;
+    $('#mPreview').replaceChildren(...items.map(it => {
+      if (it.bad) return logLine(it.bad, 'Skipped: use Artist - Album', 'skip');
+      const key = fold(it.artist) + '|' + fold(it.album);
+      if (findDupe(it.artist, it.album) >= 0 || seen.has(key)) return logLine(`${it.artist}, ${it.album}`, 'Skipped: already in the list', 'skip');
+      seen.add(key); it.ok = true; n++; return logLine(`${it.artist}, ${it.album}`, 'Will add');
+    }));
+    $('#mGo').disabled = !n; $('#mGo').textContent = n ? `Add ${n} album${n === 1 ? '' : 's'}` : 'Add albums'; return items.filter(it => it.ok);
+  }
+  $('#mText').addEventListener('input', previewMany);
+  $('#addMany').addEventListener('submit', async e => {
+    e.preventDefault(); const items = previewMany(); if (!items.length) return;
+    lastGenre = $('#mGenre').value; const ids = items.map(it => createAlbum(it.artist, it.album, lastGenre));
+    closeDlg(addDlg); $('#mText').value = ''; previewMany();
+    filter = 'new'; q.value = ''; hi = -1; renderFilters(); renderList(); if (isNarrow()) leaveEditor();
+    toast(`Added ${ids.length}. Looking up covers…`);
+    const r = await lookupMany(ids);
+    toast(r.failed ? `Added ${ids.length}. Apple Music stopped answering, use Find cover on the rest.` : `Added ${ids.length}. Covers found for ${r.ok}.`);
+  });
+
   /* ---------- menu ---------- */
   const menu = $('#menu');
   $('#btnMenu').addEventListener('click', () => {
@@ -1107,7 +1262,7 @@ body:not([data-state="loading"]) .loading{display:none}
     closeDlg(menu);
     if (dirty && store && store.kind !== 'copy') await save();
     try { localStorage.removeItem(CFG_KEY); } catch (_) {}
-    store = null; version = null; rows = []; header = []; selected = null; q.disabled = true;
+    store = null; version = null; rows = []; header = []; selected = null; q.disabled = true; $('#btnAdd').disabled = true;
     renderList(); renderEditor(); refreshStats(); setState('Not connected'); showWelcome(); toast('This device has been forgotten');
   });
 
