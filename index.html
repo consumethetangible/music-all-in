@@ -135,6 +135,39 @@ button.ghost{background:transparent}
 .note{display:block;margin-top:4px;font-size:12.5px;color:var(--err);font-weight:600}
 .addrow{margin-top:4px}
 
+/* ---------- pills, finder, next ---------- */
+.pills{display:flex;gap:8px;flex-wrap:wrap;flex-basis:100%;align-items:center}
+.pill{min-height:36px;padding:4px 14px;border-radius:999px;font-size:14px;font-weight:700;background:transparent;color:var(--mute)}
+.pill.ghost{border-color:transparent;font-weight:600;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+.pill.top[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.pill.pick[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.album .note{flex-basis:100%;margin:0}.note:empty{display:none}
+.fcov{margin-top:8px;width:100%;min-height:34px;padding:4px 6px;font-size:13px}
+details.more{margin:4px 0 0;border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;color:var(--amber);font-weight:600;min-height:32px;display:flex;align-items:center}
+details.more[open] summary{margin-bottom:10px}
+.finder{border:1px dashed var(--line2);border-radius:10px;padding:12px;margin:0 0 14px;background:var(--field)}
+.fhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.fhead button{min-height:32px;padding:2px 10px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.fopt{display:flex;flex-direction:column;gap:4px;text-align:left;padding:6px;min-height:0;font-size:12px;line-height:1.3;align-items:stretch}
+.fopt img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px;background:#2a2222}
+.fopt span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fopt em{color:var(--mute)}
+.fnote{margin:10px 0 0;font-size:13px;color:var(--mute)} .fnote a{color:var(--amber)}
+.subrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 22px;max-width:1020px}
+.subrow .sub{margin:0}
+.nextbtn{min-height:42px}
+button.nextbtn.bottom{width:100%;max-width:1020px;min-height:50px;font-size:16px}
+.wall{max-width:640px}
+.cvwrap{position:relative}
+.rk{position:absolute;top:6px;left:6px;min-width:30px;height:30px;padding:0 8px;border-radius:15px;background:rgba(0,0,0,.78);color:#fff;font:700 20px/30px var(--head);text-align:center}
+.tile[draggable="true"]{cursor:grab}
+.tile.dragging{opacity:.35}
+.tile.over{outline:2px dashed var(--amber);outline-offset:3px;border-radius:8px}
+.tile .mv{display:flex;gap:6px}
+.tile .mv button{flex:1;min-height:32px;padding:2px 8px;font-size:16px;line-height:1}
+
 /* ---------- review sheet ---------- */
 dialog{border:1px solid var(--line2);border-radius:14px;padding:0;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.6)}
 dialog::backdrop{background:rgba(5,3,3,.7)}
@@ -353,7 +386,7 @@ body:not([data-state="loading"]) .loading{display:none}
 
   const ALIASES = {
     artist:['artist'], album:['album'], year:['year'], genre:['genre'], type:['type','kind'],
-    top9:['top 9','top9'], pick:['genre pick','pick'], sentence:['sentence'],
+    top9:['top 9','top9'], rank:['top 9 rank','top9 rank','rank'], pick:['genre pick','pick'], sentence:['sentence'],
     listen:['listen url','listen'], cover:['cover url','cover'],
     writeup:['write-up url','writeup url','write-up'], added:['date added','added']
   };
@@ -440,7 +473,7 @@ body:not([data-state="loading"]) .loading{display:none}
     for (const [key, names] of Object.entries(ALIASES)) { const idx = norm.findIndex(n => names.includes(n)); if (idx >= 0) cm[key] = idx; }
     if (cm.artist == null || cm.album == null) throw new Error('This does not look like the All-In list. It needs Artist and Album columns.');
     header = hd; rows = parsed.slice(1); col = cm;
-    const missing = Object.keys(ALIASES).filter(k => col[k] == null);
+    const missing = Object.keys(ALIASES).filter(k => k !== 'rank' && col[k] == null);
     if (missing.length) showBanner(`These columns were not found, so their fields are hidden: ${missing.join(', ')}.`); else hideBanner();
     selected = keep && rows.some((_, i) => val(i, 'artist').trim() === keep) ? keep : null;
     dirty = false; hi = -1; q.disabled = false; q.value = '';
@@ -707,19 +740,98 @@ body:not([data-state="loading"]) .loading{display:none}
     sel.value = cur; sel.addEventListener('change', () => onEdit(i, key, sel.value));
     return h('div', { class: 'f' }, h('label', { for: id, text: label }), sel, key === 'pick' ? h('span', { class: 'note', 'data-note': 'pick' }) : null);
   }
+  const openDetails = new Set();
+  const rankOf = i => { const n = parseInt(val(i, 'rank'), 10); return n > 0 ? n : 0; };
+  const topsOf = () => rows.map((_, i) => i).filter(i => val(i, 'top9') === 'Yes');
+  const rankedNow = () => topsOf().some(rankOf);
+  const topsOrdered = () => topsOf().sort((a, b) => (rankOf(a) || 1e9) - (rankOf(b) || 1e9) || byArtist(a, b));
+  function ensureRank() { if (col.rank == null) { header.push('Top 9 Rank'); col.rank = header.length - 1; } }
+  function refreshAllUI() { editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row)); refreshStats(); }
+  function renumber(order) {
+    ensureRank();
+    order.forEach((j, k) => { setVal(j, 'rank', String(k + 1)); touched.add(val(j, 'artist').trim() || 'new artist'); });
+    markDirty(); refreshAllUI();
+  }
+  function moveTop(from, to) {
+    if (from === to) return;
+    const order = topsOrdered(); if (to < 0 || to >= order.length) return;
+    const [m] = order.splice(from, 1); order.splice(to, 0, m); renumber(order);
+  }
+  function setTop(i, on) {
+    if (!on) setVal(i, 'rank', '');
+    else if (rankedNow()) { ensureRank(); setVal(i, 'rank', String(Math.max(0, ...topsOf().filter(j => j !== i).map(rankOf)) + 1)); }
+    onEdit(i, 'top9', on ? 'Yes' : '');
+    if (!on && col.rank != null && rankedNow()) renumber(topsOrdered());
+  }
+  function pill(i, key, label, cls) {
+    if (col[key] == null) return null;
+    const b = h('button', { type: 'button', class: 'pill ' + cls, 'data-pill': key, 'aria-pressed': 'false',
+      onclick: () => { const on = val(i, key) !== 'Yes'; if (key === 'top9') setTop(i, on); else onEdit(i, key, on ? 'Yes' : ''); } });
+    b.dataset.label = label; return b;
+  }
+  function finderFor(el, i) {
+    const old = el.querySelector('.finder'); if (old) { old.remove(); return; }
+    const det = el.querySelector('details.more'); if (det) { det.open = true; openDetails.add(i); }
+    const term = [val(i, 'artist').trim(), val(i, 'album').trim()].filter(Boolean).join(' ');
+    const body = h('div', { class: 'fbody', text: 'Searching Apple Music…' });
+    const box = h('div', { class: 'finder' },
+      h('div', { class: 'fhead' }, h('strong', { text: 'Pick a cover' }), h('button', { type: 'button', class: 'ghost', text: 'Close', onclick: () => box.remove() })),
+      body,
+      h('p', { class: 'fnote' }, 'Not the right one? ', h('a', { href: `https://bandcamp.com/search?q=${enc(term)}&item_type=a`, target: '_blank', rel: 'noopener', text: 'Search Bandcamp' }),
+        ', right-click the cover, copy the image address, and paste it into Cover URL (under Details).'));
+    el.querySelector('.fields').prepend(box);
+    if (!term) { body.textContent = 'Add an artist and album first.'; return; }
+    fetch(`https://itunes.apple.com/search?term=${enc(term)}&media=music&entity=album&limit=8`)
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(j => {
+        const res = (j.results || []).filter(r => r.artworkUrl100);
+        if (!res.length) { body.textContent = 'Nothing found on Apple Music.'; return; }
+        body.replaceChildren(h('div', { class: 'fgrid' }, ...res.map(r => h('button', { type: 'button', class: 'fopt',
+          onclick: () => {
+            const url = r.artworkUrl100.replace(/\d+x\d+bb/, '600x600bb'), inp = el.querySelector(`#r${i}-cover`);
+            if (inp) inp.value = url; onEdit(i, 'cover', url); box.remove(); toast('Cover set');
+          } },
+          h('img', { src: r.artworkUrl100, alt: '', referrerpolicy: 'no-referrer' }),
+          h('span', {}, h('strong', { text: r.collectionName })), h('em', { text: `${r.artistName}${r.releaseDate ? ', ' + r.releaseDate.slice(0, 4) : ''}` })))));
+      })
+      .catch(() => { body.textContent = 'Could not reach Apple Music. Try Bandcamp below.'; });
+  }
   function card(i) {
     const el = h('article', { class: 'album', 'data-row': i },
-      h('div', { class: 'cvslot' }),
-      h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' })),
+      h('div', { class: 'cvslot' }, h('div', { class: 'cvimg' }), col.cover != null ? h('button', { type: 'button', class: 'fcov', text: 'Find cover', onclick: () => finderFor(el, i) }) : null),
+      h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' }),
+        h('div', { class: 'pills' }, pill(i, 'top9', 'Top 9', 'top'), pill(i, 'pick', 'Genre pick', 'pick'), h('button', { type: 'button', class: 'pill ghost', text: 'See the list ›', onclick: openReview })),
+        h('span', { class: 'note', 'data-note': 'pick' })),
       h('div', { class: 'fields' },
-        h('div', { class: 'row r2' }, tf(i, 'artist', 'Artist', { commit: 'change' }), tf(i, 'album', 'Album')),
-        h('div', { class: 'row r5' }, sf(i, 'genre', 'Genre', genreList(), 'Not set'), sf(i, 'type', 'Type', TYPES, 'Not set (counts as LP)'),
-          sf(i, 'top9', 'Top 9', ['Yes'], 'No'), sf(i, 'pick', 'Genre pick', ['Yes'], 'No'), tf(i, 'year', 'Year')),
         h('div', { class: 'row' }, tf(i, 'sentence', 'Sentence', { area: true, extra: h('span', { class: 'count', 'data-count': '' }) })),
-        h('div', { class: 'row r2' }, tf(i, 'listen', 'Listen URL', { ph: 'Album link' }), tf(i, 'cover', 'Cover URL', { ph: 'Image link' })),
-        h('div', { class: 'row r2' }, tf(i, 'writeup', 'Write-up URL', { ph: 'Leave blank if there is none' }), tf(i, 'added', 'Date added', { ph: 'yyyy-mm-dd' }))));
+        h('div', { class: 'row r2' }, sf(i, 'genre', 'Genre', genreList(), 'Not set'), sf(i, 'type', 'Type', TYPES, 'Not set (counts as LP)')),
+        h('details', { class: 'more', open: openDetails.has(i) || !val(i, 'album').trim(), ontoggle: e => { e.target.open ? openDetails.add(i) : openDetails.delete(i); } },
+          h('summary', { text: 'Details: artist, album, year, links' }),
+          h('div', { class: 'row r2' }, tf(i, 'artist', 'Artist', { commit: 'change' }), tf(i, 'album', 'Album')),
+          h('div', { class: 'row r2' }, tf(i, 'year', 'Year'), tf(i, 'added', 'Date added', { ph: 'yyyy-mm-dd' })),
+          h('div', { class: 'row r2' }, tf(i, 'listen', 'Listen URL', { ph: 'Album link' }), tf(i, 'cover', 'Cover URL', { ph: 'Image link' })),
+          h('div', { class: 'row r2' }, tf(i, 'writeup', 'Write-up URL', { ph: 'Leave blank if there is none' })))));
+    el.querySelector(`#r${i}-sentence`)?.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); goNext(); } });
     refreshCard(el, i); return el;
   }
+  /* ---------- next to write ---------- */
+  const hasGap = g => g.idx.some(i => !val(i, 'sentence').trim());
+  function nextToWrite() {
+    const gs = groups(), n = gs.length, cur = gs.findIndex(g => g.artist === selected);
+    for (let k = 1; k <= n; k++) { const g = gs[(cur + k) % n]; if (g.artist !== selected && hasGap(g)) return g; }
+    return null;
+  }
+  function refreshNext() {
+    const gs = groups(), g = nextToWrite(), left = gs.filter(x => x.artist !== selected && hasGap(x)).length, total = gs.filter(hasGap).length;
+    editor.querySelectorAll('.nextbtn').forEach(b => { b.disabled = !g; b.textContent = g ? `Next to write → (${left} left)` : total ? 'Last one to write' : '🎉 All written'; });
+  }
+  function goNext() {
+    const g = nextToWrite(); if (!g) return;
+    selected = g.artist; q.value = ''; hi = -1; renderList(); renderEditor(); enterEditor(); editor.scrollTop = 0;
+    listEl.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
+    const i = g.idx.find(j => !val(j, 'sentence').trim()); editor.querySelector(`#r${i}-sentence`)?.focus({ preventScroll: true });
+  }
+  const nextBtn = bottom => h('button', { type: 'button', class: 'primary nextbtn' + (bottom ? ' bottom' : ''), onclick: goNext, title: 'Ctrl or Cmd + Enter in the sentence box does this too' });
   function renderEditor() {
     if (selected == null) {
       editor.replaceChildren(h('div', { class: 'empty' },
@@ -731,11 +843,12 @@ body:not([data-state="loading"]) .loading{display:none}
     const idx = rows.map((_, i) => i).filter(i => val(i, 'artist').trim() === selected);
     editor.replaceChildren(
       h('h2', { class: 'artist-h', text: selected }),
-      h('p', { class: 'sub', text: `${idx.length} album${idx.length === 1 ? '' : 's'} in the list` }),
+      h('div', { class: 'subrow' }, h('p', { class: 'sub', text: `${idx.length} album${idx.length === 1 ? '' : 's'} in the list` }), nextBtn(false)),
       ...idx.map(card),
       h('button', { class: 'addrow', type: 'button', text: `Add another album by ${selected}`, onclick: () => {
-        const i = addRow(selected); touched.add(selected); markDirty(); renderEditor(); renderList(); focusAlbum(i); refreshStats(); } }));
-    editor.querySelectorAll('textarea').forEach(autogrow);
+        const i = addRow(selected); touched.add(selected); markDirty(); renderEditor(); renderList(); focusAlbum(i); refreshStats(); } }),
+      h('div', { style: 'margin-top:18px' }, nextBtn(true)));
+    editor.querySelectorAll('textarea').forEach(autogrow); refreshNext();
   }
   function pickRivals(i) {
     if (val(i, 'pick') !== 'Yes' || !val(i, 'genre')) return [];
@@ -744,11 +857,14 @@ body:not([data-state="loading"]) .loading{display:none}
   function refreshCard(el, i) {
     el.classList.toggle('top9', val(i, 'top9') === 'Yes'); el.classList.toggle('ispick', val(i, 'pick') === 'Yes');
     el.querySelector('.atitle').textContent = val(i, 'album') || 'Untitled album';
-    const slot = el.querySelector('.cvslot'), url = val(i, 'cover').trim();
+    const slot = el.querySelector('.cvimg'), url = val(i, 'cover').trim();
     if (slot.dataset.url !== url || !slot.firstChild) { slot.dataset.url = url; slot.replaceChildren(cover(i, 'm')); }
+    el.querySelectorAll('[data-pill]').forEach(b => {
+      const key = b.dataset.pill, on = val(i, key) === 'Yes';
+      b.setAttribute('aria-pressed', String(on));
+      b.textContent = (on ? '★ ' : '☆ ') + b.dataset.label + (key === 'top9' && on && rankOf(i) ? ` · #${rankOf(i)}` : '');
+    });
     const tags = el.querySelector('.tags'); tags.replaceChildren();
-    if (val(i, 'top9') === 'Yes') tags.append(h('span', { class: 'tag top', text: 'Top 9' }));
-    if (val(i, 'pick') === 'Yes') tags.append(h('span', { class: 'tag pick', text: 'Genre pick' }));
     const t = val(i, 'type');
     if (t && !SHOWN_TYPES.includes(t)) tags.append(h('span', { class: 'tag off', text: `${t}, left off the page` }));
     else if (t === 'EP') tags.append(h('span', { class: 'tag', text: 'EP' }));
@@ -761,7 +877,7 @@ body:not([data-state="loading"]) .loading{display:none}
     setVal(i, key, v); touched.add(val(i, 'artist').trim() || 'new artist'); markDirty();
     if (key === 'artist') { selected = v.trim() || selected; renderEditor(); renderList(); refreshStats(); return; }
     editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row));
-    refreshStats(); renderList();
+    refreshStats(); renderList(); refreshNext();
   }
 
   /* ---------- progress chips ---------- */
@@ -792,27 +908,47 @@ body:not([data-state="loading"]) .loading{display:none}
     renderList(); renderEditor(); enterEditor();
     const el = editor.querySelector(`.album[data-row="${i}"]`); if (!el) return;
     el.scrollIntoView({ block: 'start' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1800);
-    (el.querySelector(`#r${i}-${key}`) || el.querySelector('input'))?.focus({ preventScroll: true });
+    (el.querySelector(`[data-pill="${key}"]`) || el.querySelector('textarea'))?.focus({ preventScroll: true });
   }
   function clearFlag(i, key) {
-    setVal(i, key, ''); touched.add(val(i, 'artist').trim()); markDirty();
+    setVal(i, key, ''); if (key === 'top9') setVal(i, 'rank', ''); touched.add(val(i, 'artist').trim()); markDirty();
     if (selected != null) renderEditor(); renderList(); refreshStats();
+    if (key === 'top9' && col.rank != null && rankedNow()) renumber(topsOrdered());
   }
   const acts = (i, key) => [
     h('button', { type: 'button', class: 'open', text: 'Open', onclick: () => goTo(i, key) }),
     h('button', { type: 'button', text: 'Clear', 'aria-label': `Clear ${key === 'top9' ? 'Top 9' : 'genre pick'} for ${val(i, 'artist')}`, onclick: () => clearFlag(i, key) })];
+  let dragFrom = null;
+  function tile(i, k, n, ranked) {
+    const t = h('div', { class: 'tile', draggable: 'true',
+      ondragstart: e => { dragFrom = k; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(k)); } catch (_) {} t.classList.add('dragging'); },
+      ondragend: () => { dragFrom = null; t.classList.remove('dragging'); reviewBody.querySelectorAll('.over').forEach(x => x.classList.remove('over')); },
+      ondragover: e => { if (dragFrom != null) { e.preventDefault(); t.classList.add('over'); } },
+      ondragleave: () => t.classList.remove('over'),
+      ondrop: e => { e.preventDefault(); const from = dragFrom; dragFrom = null; if (from != null) moveTop(from, k); } },
+      h('div', { class: 'cvwrap' }, cover(i, 'l'), ranked ? h('span', { class: 'rk', text: String(k + 1) }) : null),
+      h('div', { class: 'who' }, h('strong', { text: val(i, 'artist') }), h('em', { text: val(i, 'album') })),
+      h('div', { class: 'acts' }, ...acts(i, 'top9')),
+      h('div', { class: 'mv' },
+        h('button', { type: 'button', text: '‹', disabled: k === 0, 'aria-label': `Move ${val(i, 'artist')} earlier`, onclick: () => moveTop(k, k - 1) }),
+        h('button', { type: 'button', text: '›', disabled: k === n - 1, 'aria-label': `Move ${val(i, 'artist')} later`, onclick: () => moveTop(k, k + 1) })));
+    t.querySelectorAll('img').forEach(im => { im.draggable = false; });
+    return t;
+  }
   function renderReview() {
     const all = rows.map((_, i) => i);
-    const tops = all.filter(i => val(i, 'top9') === 'Yes').sort(byArtist);
+    const tops = topsOrdered(), ranked = rankedNow();
     const msg = tops.length === 9 ? 'Exactly 9. Nothing to fix.' : tops.length > 9 ? `${tops.length - 9} too many. Clear ${tops.length - 9} to get to 9.` : `${9 - tops.length} short of 9. Open an album and set Top 9 to Yes.`;
     const slots = Math.max(9, tops.length), tiles = [];
     for (let k = 0; k < slots; k++) {
       const i = tops[k];
       tiles.push(i == null
         ? h('div', { class: 'tile empty-slot' }, h('div', { class: 'cv', text: 'Open slot' }))
-        : h('div', { class: 'tile' }, cover(i, 'l'), h('div', { class: 'who' }, h('strong', { text: val(i, 'artist') }), h('em', { text: val(i, 'album') })), h('div', { class: 'acts' }, ...acts(i, 'top9'))));
+        : tile(i, k, tops.length, ranked));
     }
-    const out = [h('h3', { text: 'Top 9' }), h('p', { class: 'rsum ' + (tops.length === 9 ? 'good' : 'bad'), text: `${tops.length} marked. ${msg}` }), h('div', { class: 'wall' }, ...tiles), h('h3', { text: 'Genre picks' })];
+    const out = [h('h3', { text: 'Top 9' }), h('p', { class: 'rsum ' + (tops.length === 9 ? 'good' : 'bad'), text: `${tops.length} marked. ${msg}` }),
+      h('p', { class: 'rsum', text: ranked ? 'Drag a cover onto another to reorder, or use the arrows. The order saves as Top 9 Rank.' : 'Optional: drag covers (or use the arrows) to rank them. That adds a Top 9 Rank column to your CSV.' }),
+      h('div', { class: 'wall' }, ...tiles), h('h3', { text: 'Genre picks' })];
     const pickRows = all.filter(i => val(i, 'pick') === 'Yes'), gl = genreList();
     gl.forEach(g => {
       const mine = pickRows.filter(i => val(i, 'genre') === g).sort(byArtist);
