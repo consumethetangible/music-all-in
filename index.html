@@ -74,7 +74,7 @@ button.ghost{background:transparent}
 
 /* ---------- panes ---------- */
 .work{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);min-height:0}
-.index{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.index{display:flex;flex-direction:column;min-height:0;min-width:0;border-right:1px solid var(--line)}
 .searchbox{padding:14px 14px 8px;position:relative}
 #q{width:100%;font:inherit;font-size:16px;padding:11px 14px 11px 40px;min-height:46px;border:1px solid var(--line2);border-radius:10px;background:var(--field);color:var(--ink)}
 .searchbox svg{position:absolute;left:28px;top:28px;width:18px;height:18px;color:var(--mute);pointer-events:none}
@@ -135,6 +135,34 @@ button.ghost{background:transparent}
 .note{display:block;margin-top:4px;font-size:12.5px;color:var(--err);font-weight:600}
 .addrow{margin-top:4px}
 
+/* ---------- ranked view ---------- */
+#list li.rk{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:stretch;border-bottom:1px solid var(--line);background:transparent}
+#list li.rk button.item{border-bottom:0;padding-left:6px;padding-right:4px;gap:10px;min-width:0;overflow:hidden}
+#list button.add{white-space:nowrap}
+#list li.rk.dragging{opacity:.35}
+#list li.rk.over{box-shadow:inset 0 3px 0 var(--amber)}
+#list li.rk.flash{background:var(--raised);box-shadow:inset 3px 0 0 var(--focus)}
+#list li.rk[draggable="true"]{cursor:grab}
+.rnk{align-self:center;justify-self:center;width:36px;min-height:34px;padding:0;border-radius:8px;font:700 19px/1 var(--head);background:var(--raised);text-align:center;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.rnk.top{background:var(--red);border-color:var(--red);color:#fff}
+.rnk.blank{background:transparent;border:0;color:var(--mute)}
+input.rnkin{align-self:center;justify-self:center;width:44px;min-height:34px;padding:2px 2px;text-align:center;font-size:16px;border:2px solid var(--amber);border-radius:8px;background:var(--field);color:var(--ink);-moz-appearance:textfield}
+input.rnkin::-webkit-inner-spin-button{display:none}
+#list button.rm,#list button.add{align-self:center;margin-right:10px;min-height:34px;padding:4px 10px;font-size:13px}
+#list button.rm{color:var(--mute);background:transparent;border-color:transparent}
+#list li.cut{padding:6px 14px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border-top:2px solid var(--amber);border-bottom:1px solid var(--line);background:var(--surface)}
+#list li.rempty{padding:18px 14px;color:var(--mute)}
+#list li.uhead{padding:6px 8px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:1}
+#list li.uhead button{min-height:34px;border:0;font-weight:700;color:var(--mute)}
+.listen .lrow{display:flex;gap:8px;align-items:stretch}
+.listen .lrow input{flex:1;min-width:0}
+.listen input.blank{border-color:var(--amber);border-style:dashed}
+.openlink{flex:none;display:flex;align-items:center;padding:0 14px;border:1px solid var(--line2);border-radius:8px;background:var(--raised);color:var(--ink);text-decoration:none;font-weight:600;white-space:nowrap}
+.openlink:hover{border-color:var(--amber)}
+.openlink[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.note.soft{color:var(--warn);font-weight:500}
+.pill.rank[aria-pressed="true"]:not(.top){border-color:var(--ink);color:var(--ink)}
+
 /* ---------- pills, finder, next ---------- */
 .pills{display:flex;gap:8px;flex-wrap:wrap;flex-basis:100%;align-items:center}
 .pill{min-height:36px;padding:4px 14px;border-radius:999px;font-size:14px;font-weight:700;background:transparent;color:var(--mute)}
@@ -161,12 +189,7 @@ details.more[open] summary{margin-bottom:10px}
 button.nextbtn.bottom{width:100%;max-width:1020px;min-height:50px;font-size:16px}
 .wall{max-width:640px}
 .cvwrap{position:relative}
-.rk{position:absolute;top:6px;left:6px;min-width:30px;height:30px;padding:0 8px;border-radius:15px;background:rgba(0,0,0,.78);color:#fff;font:700 20px/30px var(--head);text-align:center}
-.tile[draggable="true"]{cursor:grab}
-.tile.dragging{opacity:.35}
-.tile.over{outline:2px dashed var(--amber);outline-offset:3px;border-radius:8px}
-.tile .mv{display:flex;gap:6px}
-.tile .mv button{flex:1;min-height:32px;padding:2px 8px;font-size:16px;line-height:1}
+.rkb{position:absolute;top:6px;left:6px;min-width:30px;height:30px;padding:0 8px;border-radius:15px;background:rgba(0,0,0,.78);color:#fff;font:700 20px/30px var(--head);text-align:center}
 
 /* ---------- review sheet ---------- */
 dialog{border:1px solid var(--line2);border-radius:14px;padding:0;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.6)}
@@ -242,7 +265,7 @@ body:not([data-state="loading"]) .loading{display:none}
   body[data-view="editor"] #btnBack{display:inline-flex}
   body[data-view="editor"] .brand{display:none}
   body[data-view="editor"] .bar{grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"back . sync menu" "chips chips chips chips"}
-  .work{grid-template-columns:1fr}
+  .work{grid-template-columns:minmax(0,1fr)}
   body[data-view="list"] .editor{display:none}
   body[data-view="editor"] .index{display:none}
   .index{border-right:0}
@@ -658,38 +681,149 @@ body:not([data-state="loading"]) .loading{display:none}
     rows.forEach((_, i) => { const a = val(i, 'artist').trim(); if (!a) return; if (!m.has(a)) m.set(a, []); m.get(a).push(i); });
     return [...m].map(([artist, idx]) => ({ artist, idx })).sort((x, y) => sortKey(x.artist).localeCompare(sortKey(y.artist)));
   }
-  const FILTERS = [['all', 'All'], ['towrite', 'To write'], ['top9', 'Top 9'], ['picks', 'Picks']];
-  const filterFn = { all: () => true,
+  const FILTERS = [['all', 'All'], ['ranked', 'Ranked'], ['towrite', 'To write'], ['nolink', 'Needs link'], ['top9', 'Top 9'], ['picks', 'Picks']];
+  const filterFn = { all: () => true, ranked: () => true,
+    nolink: g => g.idx.some(i => !/^https?:\/\//i.test(val(i, 'listen').trim())),
     towrite: g => g.idx.some(i => !val(i, 'sentence').trim()),
     top9: g => g.idx.some(i => val(i, 'top9') === 'Yes'),
     picks: g => g.idx.some(i => val(i, 'pick') === 'Yes') };
   function renderFilters() {
     $('#filters').replaceChildren(...FILTERS.map(([k, label]) => h('button', { type: 'button', text: label, 'aria-pressed': String(filter === k), onclick: () => { filter = k; hi = q.value.trim() ? 0 : -1; renderFilters(); renderList(); } })));
   }
+  const addLi = (raw, k) => h('li', {}, h('button', { type: 'button', class: 'item newone' + (k === hi ? ' hi' : ''), 'data-k': k },
+    h('span', { class: 'cv s ph', style: 'background:#33260d;color:#f0a13a', text: '+' }), h('span', { class: 'nm', text: `Add \u201c${raw}\u201d as a new artist` }), h('span')));
   function renderList() {
     const raw = q.value.trim(), term = fold(raw), all = groups();
-    const hits = all.filter(g => filterFn[filter](g) && (!term || fold(g.artist).includes(term) || g.idx.some(i => fold(val(i, 'album')).includes(term))));
-    shown = hits.map(g => ({ g }));
-    if (raw && !all.some(g => fold(g.artist) === term)) shown.push({ add: raw });
+    let els;
+    if (filter === 'ranked') els = renderRankedList(raw, term, all);
+    else {
+      const hits = all.filter(g => filterFn[filter](g) && (!term || fold(g.artist).includes(term) || g.idx.some(i => fold(val(i, 'album')).includes(term))));
+      shown = hits.map(g => ({ g }));
+      if (raw && !all.some(g => fold(g.artist) === term)) shown.push({ add: raw });
+      els = shown.map((s, k) => {
+        if (s.add) return addLi(s.add, k);
+        const n = s.g.idx.length, written = s.g.idx.filter(i => val(i, 'sentence').trim()).length;
+        const first = s.g.idx.find(i => /^https?:\/\//i.test(val(i, 'cover').trim())) ?? s.g.idx[0];
+        const marks = [];
+        if (s.g.idx.some(i => val(i, 'top9') === 'Yes')) marks.push(h('span', { class: 'mk top', title: 'Has a Top 9 album', text: 'Top 9' }));
+        if (s.g.idx.some(i => val(i, 'pick') === 'Yes')) marks.push(h('span', { class: 'mk pick', title: 'Has a genre pick', text: 'Pick' }));
+        return h('li', {}, h('button', { type: 'button', class: 'item' + (k === hi ? ' hi' : ''), 'data-k': k, 'aria-current': s.g.artist === selected ? 'true' : null },
+          cover(first, 's'),
+          h('span', {}, h('span', { class: 'nm', text: s.g.artist }), h('span', { class: 'meta', text: `${n} album${n === 1 ? '' : 's'}, ${written === 0 ? 'none written' : written === n ? 'all written' : written + ' written'}` })),
+          h('span', { class: 'marks' }, ...marks)));
+      });
+    }
     if (hi >= shown.length) hi = shown.length - 1;
-    listEl.replaceChildren(...shown.map((s, k) => {
-      if (s.add) return h('li', {}, h('button', { type: 'button', class: 'item newone' + (k === hi ? ' hi' : ''), 'data-k': k },
-        h('span', { class: 'cv s ph', style: 'background:#33260d;color:#f0a13a', text: '+' }), h('span', { class: 'nm', text: `Add “${s.add}” as a new artist` }), h('span')));
-      const n = s.g.idx.length, written = s.g.idx.filter(i => val(i, 'sentence').trim()).length;
-      const first = s.g.idx.find(i => /^https?:\/\//i.test(val(i, 'cover').trim())) ?? s.g.idx[0];
-      const marks = [];
-      if (s.g.idx.some(i => val(i, 'top9') === 'Yes')) marks.push(h('span', { class: 'mk top', title: 'Has a Top 9 album', text: 'Top 9' }));
-      if (s.g.idx.some(i => val(i, 'pick') === 'Yes')) marks.push(h('span', { class: 'mk pick', title: 'Has a genre pick', text: 'Pick' }));
-      return h('li', {}, h('button', { type: 'button', class: 'item' + (k === hi ? ' hi' : ''), 'data-k': k, 'aria-current': s.g.artist === selected ? 'true' : null },
-        cover(first, 's'),
-        h('span', {}, h('span', { class: 'nm', text: s.g.artist }), h('span', { class: 'meta', text: `${n} album${n === 1 ? '' : 's'}, ${written === 0 ? 'none written' : written === n ? 'all written' : written + ' written'}` })),
-        h('span', { class: 'marks' }, ...marks)));
-    }));
+    listEl.replaceChildren(...els);
     if (hi >= 0) listEl.querySelector('button.hi')?.scrollIntoView({ block: 'nearest' });
+  }
+
+  /* ---------- ranking: every album, Top 9 = the first nine ---------- */
+  let unrankedOpen = true, dragRank = null;
+  const rankOf = i => { const n = parseInt(val(i, 'rank'), 10); return n > 0 ? n : 0; };
+  /* The order on screen. Albums already flagged Top 9 but never ranked are kept at the end of the ranked list, so nothing is lost. */
+  function rankedOrder() {
+    const all = rows.map((_, i) => i).filter(i => val(i, 'artist').trim());
+    const ranked = all.filter(rankOf).sort((a, b) => rankOf(a) - rankOf(b) || byArtist(a, b));
+    const stray = all.filter(i => !rankOf(i) && val(i, 'top9') === 'Yes').sort(byArtist);
+    return [...ranked, ...stray];
+  }
+  function ensureRank() { if (col.rank == null) { header.push('Rank'); col.rank = header.length - 1; } }
+  function refreshAllUI() { editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row)); refreshStats(); }
+  function applyOrder(list) {
+    ensureRank();
+    const pos = new Map(list.map((j, k) => [j, k + 1]));
+    rows.forEach((_, i) => {
+      const p = pos.get(i) || 0, r = p ? String(p) : '';
+      if (val(i, 'rank') !== r) setVal(i, 'rank', r);
+      if (col.top9 != null) { const t = p && p <= 9 ? 'Yes' : ''; if (val(i, 'top9') !== t) setVal(i, 'top9', t); }
+    });
+    touched.add('ranking'); markDirty(); refreshAllUI(); renderList();
+  }
+  function moveRank(i, pos) {
+    const list = rankedOrder(), f = list.indexOf(i);
+    if (f === pos - 1) { renderList(); return; }
+    if (f >= 0) list.splice(f, 1);
+    list.splice(Math.max(0, Math.min(pos - 1, list.length)), 0, i); applyOrder(list);
+    listEl.querySelector(`[data-row="${i}"]`)?.scrollIntoView({ block: 'nearest' });
+  }
+  function moveToSlot(from, target) {
+    const list = rankedOrder(), t = list.indexOf(target), f = list.indexOf(from);
+    if (t < 0 || from === target) return;
+    if (f >= 0) list.splice(f, 1);
+    list.splice(t, 0, from); applyOrder(list);
+  }
+  function addRank(i) { const list = rankedOrder(); if (list.includes(i)) return list.indexOf(i) + 1; list.push(i); applyOrder(list); return list.length; }
+  function removeRank(i) { applyOrder(rankedOrder().filter(j => j !== i)); }
+  function showRanking(i) {
+    filter = 'ranked'; q.value = ''; hi = -1; renderFilters(); renderList();
+    if (isNarrow()) { leaveEditor(); }
+    if (i != null) { const li = listEl.querySelector(`[data-row="${i}"]`); li?.scrollIntoView({ block: 'center' }); li?.classList.add('flash'); setTimeout(() => li?.classList.remove('flash'), 1600); }
+  }
+  function editRank(btn, i, n) {
+    const inp = h('input', { type: 'number', min: 1, max: n, value: btn.textContent, class: 'rnkin', 'aria-label': 'Move to position' });
+    btn.replaceWith(inp); inp.focus(); inp.select();
+    let done = false;
+    const commit = () => { if (done) return; done = true; const v = parseInt(inp.value, 10); if (v >= 1) moveRank(i, Math.min(v, n)); else renderList(); };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } else if (e.key === 'Escape') { done = true; renderList(); } });
+    inp.addEventListener('blur', commit);
+  }
+  function dragProps(li, i, canDrop) {
+    li.draggable = true;
+    li.addEventListener('dragstart', e => { dragRank = i; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(i)); } catch (_) {} li.classList.add('dragging'); });
+    li.addEventListener('dragend', () => { dragRank = null; li.classList.remove('dragging'); listEl.querySelectorAll('.over').forEach(x => x.classList.remove('over')); });
+    if (canDrop) {
+      li.addEventListener('dragover', e => { if (dragRank != null && dragRank !== i) { e.preventDefault(); li.classList.add('over'); } });
+      li.addEventListener('dragleave', () => li.classList.remove('over'));
+      li.addEventListener('drop', e => { e.preventDefault(); const f = dragRank; dragRank = null; if (f != null) moveToSlot(f, i); });
+    }
+    li.querySelectorAll('img').forEach(im => { im.draggable = false; });
+  }
+  function rankedRow(i, p, k, n) {
+    const top = p <= 9, artist = val(i, 'artist').trim();
+    const rb = h('button', { type: 'button', class: 'rnk' + (top ? ' top' : ''), text: String(p), title: 'Tap to move to another position', 'aria-label': `Rank ${p}, ${artist}. Move to another position`, onclick: () => editRank(rb, i, n) });
+    const marks = []; if (val(i, 'pick') === 'Yes') marks.push(h('span', { class: 'mk pick', text: 'Pick' }));
+    const li = h('li', { class: 'rk' + (top ? ' t9' : ''), 'data-row': i }, rb,
+      h('button', { type: 'button', class: 'item' + (k === hi ? ' hi' : ''), 'data-k': k, 'aria-current': artist === selected ? 'true' : null },
+        cover(i, 's'), h('span', {}, h('span', { class: 'nm', text: artist }), h('span', { class: 'meta', text: val(i, 'album') || 'Untitled album' })), h('span', { class: 'marks' }, ...marks)),
+      h('button', { type: 'button', class: 'rm', text: '\u2715', title: 'Remove from ranking', 'aria-label': `Remove ${artist} from the ranking`, onclick: () => removeRank(i) }));
+    dragProps(li, i, true); return li;
+  }
+  function unrankedRow(i, k) {
+    const artist = val(i, 'artist').trim();
+    const li = h('li', { class: 'rk un', 'data-row': i }, h('span', { class: 'rnk blank', text: '\u2013', 'aria-hidden': 'true' }),
+      h('button', { type: 'button', class: 'item' + (k === hi ? ' hi' : ''), 'data-k': k, 'aria-current': artist === selected ? 'true' : null },
+        cover(i, 's'), h('span', {}, h('span', { class: 'nm', text: artist }), h('span', { class: 'meta', text: val(i, 'album') || 'Untitled album' })), h('span')),
+      h('button', { type: 'button', class: 'add', text: '+ Rank', 'aria-label': `Add ${artist} to the ranking`, onclick: () => addRank(i) }));
+    dragProps(li, i, false); return li;
+  }
+  function renderRankedList(raw, term, all) {
+    const order = rankedOrder(), pos = new Map(order.map((j, k) => [j, k + 1]));
+    const match = i => !term || fold(val(i, 'artist')).includes(term) || fold(val(i, 'album')).includes(term);
+    const ranked = order.filter(match);
+    const unr = rows.map((_, i) => i).filter(i => val(i, 'artist').trim() && !pos.has(i) && match(i)).sort(byArtist);
+    shown = []; const els = [];
+    ranked.forEach(i => {
+      shown.push({ rk: i }); els.push(rankedRow(i, pos.get(i), shown.length - 1, order.length));
+      if (!term && pos.get(i) === 9 && order.length > 9) els.push(h('li', { class: 'cut', text: 'Top 9 above \u00b7 the rest below' }));
+    });
+    if (!ranked.length && !term) els.push(h('li', { class: 'rempty', text: 'Nothing ranked yet. Tap + Rank on an album below, or Rank it on any album card.' }));
+    if (unr.length) {
+      els.push(h('li', { class: 'uhead' }, h('button', { type: 'button', class: 'ghost', text: `${unrankedOpen || term ? '\u25be' : '\u25b8'} Not ranked yet (${unr.length})`, 'aria-expanded': String(unrankedOpen), onclick: () => { unrankedOpen = !unrankedOpen; renderList(); } })));
+      if (unrankedOpen || term) unr.forEach(i => { shown.push({ unr: i }); els.push(unrankedRow(i, shown.length - 1)); });
+    }
+    if (raw && !all.some(g => fold(g.artist) === term)) { shown.push({ add: raw }); els.push(addLi(raw, shown.length - 1)); }
+    return els;
   }
   function setView(v) { body.dataset.view = v; if (v === 'list') listEl.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' }); }
   function choose(s) {
     if (!s) return;
+    if (s.rk != null || s.unr != null) {
+      const i = s.rk ?? s.unr; selected = val(i, 'artist').trim(); if (isNarrow()) { q.value = ''; hi = -1; }
+      renderList(); renderEditor(); enterEditor();
+      const el = editor.querySelector(`.album[data-row="${i}"]`); if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1400); }
+      return;
+    }
     if (s.add) { const i = addRow(s.add); touched.add(s.add); markDirty(); selected = s.add; q.value = ''; hi = -1; renderList(); renderEditor(); enterEditor(); focusAlbum(i); refreshStats(); return; }
     selected = s.g.artist;
     if (isNarrow()) { q.value = ''; hi = -1; }
@@ -741,33 +875,18 @@ body:not([data-state="loading"]) .loading{display:none}
     return h('div', { class: 'f' }, h('label', { for: id, text: label }), sel, key === 'pick' ? h('span', { class: 'note', 'data-note': 'pick' }) : null);
   }
   const openDetails = new Set();
-  const rankOf = i => { const n = parseInt(val(i, 'rank'), 10); return n > 0 ? n : 0; };
-  const topsOf = () => rows.map((_, i) => i).filter(i => val(i, 'top9') === 'Yes');
-  const rankedNow = () => topsOf().some(rankOf);
-  const topsOrdered = () => topsOf().sort((a, b) => (rankOf(a) || 1e9) - (rankOf(b) || 1e9) || byArtist(a, b));
-  function ensureRank() { if (col.rank == null) { header.push('Top 9 Rank'); col.rank = header.length - 1; } }
-  function refreshAllUI() { editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row)); refreshStats(); }
-  function renumber(order) {
-    ensureRank();
-    order.forEach((j, k) => { setVal(j, 'rank', String(k + 1)); touched.add(val(j, 'artist').trim() || 'new artist'); });
-    markDirty(); refreshAllUI();
-  }
-  function moveTop(from, to) {
-    if (from === to) return;
-    const order = topsOrdered(); if (to < 0 || to >= order.length) return;
-    const [m] = order.splice(from, 1); order.splice(to, 0, m); renumber(order);
-  }
-  function setTop(i, on) {
-    if (!on) setVal(i, 'rank', '');
-    else if (rankedNow()) { ensureRank(); setVal(i, 'rank', String(Math.max(0, ...topsOf().filter(j => j !== i).map(rankOf)) + 1)); }
-    onEdit(i, 'top9', on ? 'Yes' : '');
-    if (!on && col.rank != null && rankedNow()) renumber(topsOrdered());
-  }
   function pill(i, key, label, cls) {
     if (col[key] == null) return null;
-    const b = h('button', { type: 'button', class: 'pill ' + cls, 'data-pill': key, 'aria-pressed': 'false',
-      onclick: () => { const on = val(i, key) !== 'Yes'; if (key === 'top9') setTop(i, on); else onEdit(i, key, on ? 'Yes' : ''); } });
+    const b = h('button', { type: 'button', class: 'pill ' + cls, 'data-pill': key, 'aria-pressed': 'false', onclick: () => onEdit(i, key, val(i, key) === 'Yes' ? '' : 'Yes') });
     b.dataset.label = label; return b;
+  }
+  function rankPill(i) {
+    const b = h('button', { type: 'button', class: 'pill rank', 'data-pill': 'rank', 'aria-pressed': 'false', onclick: () => {
+      const p = rankedOrder().indexOf(i) + 1;
+      if (!p) { const n = addRank(i); toast(`Ranked #${n}. Reorder it in the Ranked view.`); }
+      else if (confirm(`Remove ${val(i, 'artist')} (${val(i, 'album') || 'untitled'}) from your ranking? Everything below moves up one.`)) removeRank(i);
+    } });
+    return b;
   }
   function finderFor(el, i) {
     const old = el.querySelector('.finder'); if (old) { old.remove(); return; }
@@ -796,21 +915,29 @@ body:not([data-state="loading"]) .loading{display:none}
       })
       .catch(() => { body.textContent = 'Could not reach Apple Music. Try Bandcamp below.'; });
   }
+  function listenRow(i) {
+    if (col.listen == null) return null;
+    const f = tf(i, 'listen', 'Listen link', { ph: 'Paste the album page link (Bandcamp, Apple Music, Spotify)' });
+    const input = f.querySelector('input'), lrow = h('div', { class: 'lrow' });
+    input.replaceWith(lrow); lrow.append(input, h('a', { class: 'openlink', target: '_blank', rel: 'noopener', text: 'Open \u2197' }));
+    f.classList.add('listen'); f.append(h('span', { class: 'note soft', 'data-lnote': '' }));
+    return h('div', { class: 'row' }, f);
+  }
   function card(i) {
     const el = h('article', { class: 'album', 'data-row': i },
       h('div', { class: 'cvslot' }, h('div', { class: 'cvimg' }), col.cover != null ? h('button', { type: 'button', class: 'fcov', text: 'Find cover', onclick: () => finderFor(el, i) }) : null),
       h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' }),
-        h('div', { class: 'pills' }, pill(i, 'top9', 'Top 9', 'top'), pill(i, 'pick', 'Genre pick', 'pick'), h('button', { type: 'button', class: 'pill ghost', text: 'See the list ›', onclick: openReview })),
+        h('div', { class: 'pills' }, rankPill(i), pill(i, 'pick', 'Genre pick', 'pick'), h('button', { type: 'button', class: 'pill ghost', text: 'Ranking ›', onclick: () => showRanking(i) })),
         h('span', { class: 'note', 'data-note': 'pick' })),
       h('div', { class: 'fields' },
+        listenRow(i),
         h('div', { class: 'row' }, tf(i, 'sentence', 'Sentence', { area: true, extra: h('span', { class: 'count', 'data-count': '' }) })),
         h('div', { class: 'row r2' }, sf(i, 'genre', 'Genre', genreList(), 'Not set'), sf(i, 'type', 'Type', TYPES, 'Not set (counts as LP)')),
         h('details', { class: 'more', open: openDetails.has(i) || !val(i, 'album').trim(), ontoggle: e => { e.target.open ? openDetails.add(i) : openDetails.delete(i); } },
-          h('summary', { text: 'Details: artist, album, year, links' }),
+          h('summary', { text: 'Details: artist, album, year, cover, write-up' }),
           h('div', { class: 'row r2' }, tf(i, 'artist', 'Artist', { commit: 'change' }), tf(i, 'album', 'Album')),
           h('div', { class: 'row r2' }, tf(i, 'year', 'Year'), tf(i, 'added', 'Date added', { ph: 'yyyy-mm-dd' })),
-          h('div', { class: 'row r2' }, tf(i, 'listen', 'Listen URL', { ph: 'Album link' }), tf(i, 'cover', 'Cover URL', { ph: 'Image link' })),
-          h('div', { class: 'row r2' }, tf(i, 'writeup', 'Write-up URL', { ph: 'Leave blank if there is none' })))));
+          h('div', { class: 'row r2' }, tf(i, 'cover', 'Cover URL', { ph: 'Image link' }), tf(i, 'writeup', 'Write-up URL', { ph: 'Leave blank if there is none' })))));
     el.querySelector(`#r${i}-sentence`)?.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); goNext(); } });
     refreshCard(el, i); return el;
   }
@@ -859,11 +986,19 @@ body:not([data-state="loading"]) .loading{display:none}
     el.querySelector('.atitle').textContent = val(i, 'album') || 'Untitled album';
     const slot = el.querySelector('.cvimg'), url = val(i, 'cover').trim();
     if (slot.dataset.url !== url || !slot.firstChild) { slot.dataset.url = url; slot.replaceChildren(cover(i, 'm')); }
-    el.querySelectorAll('[data-pill]').forEach(b => {
-      const key = b.dataset.pill, on = val(i, key) === 'Yes';
-      b.setAttribute('aria-pressed', String(on));
-      b.textContent = (on ? '★ ' : '☆ ') + b.dataset.label + (key === 'top9' && on && rankOf(i) ? ` · #${rankOf(i)}` : '');
+    el.querySelectorAll('[data-pill="pick"]').forEach(b => {
+      const on = val(i, 'pick') === 'Yes';
+      b.setAttribute('aria-pressed', String(on)); b.textContent = (on ? '★ ' : '☆ ') + b.dataset.label;
     });
+    const rb = el.querySelector('[data-pill="rank"]');
+    if (rb) { const p = rankedOrder().indexOf(i) + 1; rb.setAttribute('aria-pressed', String(!!p)); rb.classList.toggle('top', p > 0 && p <= 9); rb.textContent = p ? `★ #${p}${p <= 9 ? ' · Top 9' : ''}` : '☆ Rank it'; }
+    const lk = el.querySelector('.openlink');
+    if (lk) {
+      const u = val(i, 'listen').trim(), ok = /^https?:\/\//i.test(u), ln = el.querySelector('[data-lnote]');
+      if (ok) { lk.href = u; lk.removeAttribute('aria-disabled'); } else { lk.removeAttribute('href'); lk.setAttribute('aria-disabled', 'true'); }
+      el.querySelector('.lrow input').classList.toggle('blank', !u);
+      ln.textContent = !u || ok ? '' : u.startsWith('[') ? 'That is a Bandcamp embed code. A normal album page link will make Open work.' : 'That does not look like a web link yet.';
+    }
     const tags = el.querySelector('.tags'); tags.replaceChildren();
     const t = val(i, 'type');
     if (t && !SHOWN_TYPES.includes(t)) tags.append(h('span', { class: 'tag off', text: `${t}, left off the page` }));
@@ -886,14 +1021,15 @@ body:not([data-state="loading"]) .loading{display:none}
     if (!rows.length) { chips.replaceChildren(); return; }
     const all = rows.map((_, i) => i);
     const written = all.filter(i => val(i, 'sentence').trim()).length;
-    const top = all.filter(i => val(i, 'top9') === 'Yes').length;
+    const nRanked = rankedOrder().length, top = Math.min(nRanked, 9);
     const per = {}; all.forEach(i => { if (val(i, 'pick') === 'Yes') per[val(i, 'genre')] = (per[val(i, 'genre')] || 0) + 1; });
     const gl = genreList(), have = gl.filter(g => per[g]).length, dupes = Object.keys(per).filter(g => per[g] > 1);
     const pct = rows.length ? Math.round(written / rows.length * 100) : 0;
     const chip = (label, value, cls, onclick, extra = {}) => h('button', { type: 'button', class: 'chip ' + cls, onclick, ...extra }, h('small', { text: label }), h('strong', { text: value }));
     chips.replaceChildren(
       chip('Written', `${written} of ${rows.length}`, '', () => { filter = 'towrite'; renderFilters(); renderList(); if (isNarrow()) leaveEditor(); }, { style: `--p:${pct}%`, title: 'Show artists with albums still to write' }),
-      chip('Top 9', `${top} of 9`, top === 9 ? 'ok' : top > 9 ? 'bad' : '', openReview, { title: 'Review the Top 9' }),
+      chip('Ranked', `${nRanked} of ${rows.length}`, '', () => showRanking(), { title: 'Rank and sort every album' }),
+      chip('Top 9', `${top} of 9`, top === 9 ? 'ok' : '', openReview, { title: 'See the Top 9' }),
       chip('Picks', `${have} of ${GENRES.length}${dupes.length ? ', ' + dupes.length + ' doubled' : ''}`, dupes.length ? 'bad' : (have >= GENRES.length ? 'ok' : ''), openReview, { title: 'Review genre picks' }));
     if (dlgOpen($('#review'))) renderReview();
   }
@@ -911,43 +1047,30 @@ body:not([data-state="loading"]) .loading{display:none}
     (el.querySelector(`[data-pill="${key}"]`) || el.querySelector('textarea'))?.focus({ preventScroll: true });
   }
   function clearFlag(i, key) {
-    setVal(i, key, ''); if (key === 'top9') setVal(i, 'rank', ''); touched.add(val(i, 'artist').trim()); markDirty();
+    if (key === 'top9') { removeRank(i); return; }
+    setVal(i, key, ''); touched.add(val(i, 'artist').trim()); markDirty();
     if (selected != null) renderEditor(); renderList(); refreshStats();
-    if (key === 'top9' && col.rank != null && rankedNow()) renumber(topsOrdered());
   }
   const acts = (i, key) => [
     h('button', { type: 'button', class: 'open', text: 'Open', onclick: () => goTo(i, key) }),
-    h('button', { type: 'button', text: 'Clear', 'aria-label': `Clear ${key === 'top9' ? 'Top 9' : 'genre pick'} for ${val(i, 'artist')}`, onclick: () => clearFlag(i, key) })];
-  let dragFrom = null;
-  function tile(i, k, n, ranked) {
-    const t = h('div', { class: 'tile', draggable: 'true',
-      ondragstart: e => { dragFrom = k; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(k)); } catch (_) {} t.classList.add('dragging'); },
-      ondragend: () => { dragFrom = null; t.classList.remove('dragging'); reviewBody.querySelectorAll('.over').forEach(x => x.classList.remove('over')); },
-      ondragover: e => { if (dragFrom != null) { e.preventDefault(); t.classList.add('over'); } },
-      ondragleave: () => t.classList.remove('over'),
-      ondrop: e => { e.preventDefault(); const from = dragFrom; dragFrom = null; if (from != null) moveTop(from, k); } },
-      h('div', { class: 'cvwrap' }, cover(i, 'l'), ranked ? h('span', { class: 'rk', text: String(k + 1) }) : null),
+    h('button', { type: 'button', text: key === 'top9' ? 'Remove' : 'Clear', 'aria-label': `${key === 'top9' ? 'Remove from the ranking:' : 'Clear genre pick for'} ${val(i, 'artist')}`, onclick: () => clearFlag(i, key) })];
+  function tile(i, k) {
+    return h('div', { class: 'tile' },
+      h('div', { class: 'cvwrap' }, cover(i, 'l'), h('span', { class: 'rkb', text: String(k + 1) })),
       h('div', { class: 'who' }, h('strong', { text: val(i, 'artist') }), h('em', { text: val(i, 'album') })),
-      h('div', { class: 'acts' }, ...acts(i, 'top9')),
-      h('div', { class: 'mv' },
-        h('button', { type: 'button', text: '‹', disabled: k === 0, 'aria-label': `Move ${val(i, 'artist')} earlier`, onclick: () => moveTop(k, k - 1) }),
-        h('button', { type: 'button', text: '›', disabled: k === n - 1, 'aria-label': `Move ${val(i, 'artist')} later`, onclick: () => moveTop(k, k + 1) })));
-    t.querySelectorAll('img').forEach(im => { im.draggable = false; });
-    return t;
+      h('div', { class: 'acts' }, ...acts(i, 'top9')));
   }
   function renderReview() {
     const all = rows.map((_, i) => i);
-    const tops = topsOrdered(), ranked = rankedNow();
-    const msg = tops.length === 9 ? 'Exactly 9. Nothing to fix.' : tops.length > 9 ? `${tops.length - 9} too many. Clear ${tops.length - 9} to get to 9.` : `${9 - tops.length} short of 9. Open an album and set Top 9 to Yes.`;
-    const slots = Math.max(9, tops.length), tiles = [];
-    for (let k = 0; k < slots; k++) {
+    const tops = rankedOrder().slice(0, 9);
+    const msg = tops.length === 9 ? 'Your Top 9 is the first nine albums in the ranking.' : `${9 - tops.length} more to rank to fill the Top 9.`;
+    const tiles = [];
+    for (let k = 0; k < 9; k++) {
       const i = tops[k];
-      tiles.push(i == null
-        ? h('div', { class: 'tile empty-slot' }, h('div', { class: 'cv', text: 'Open slot' }))
-        : tile(i, k, tops.length, ranked));
+      tiles.push(i == null ? h('div', { class: 'tile empty-slot' }, h('div', { class: 'cv', text: 'Open slot' })) : tile(i, k));
     }
-    const out = [h('h3', { text: 'Top 9' }), h('p', { class: 'rsum ' + (tops.length === 9 ? 'good' : 'bad'), text: `${tops.length} marked. ${msg}` }),
-      h('p', { class: 'rsum', text: ranked ? 'Drag a cover onto another to reorder, or use the arrows. The order saves as Top 9 Rank.' : 'Optional: drag covers (or use the arrows) to rank them. That adds a Top 9 Rank column to your CSV.' }),
+    const out = [h('h3', { text: 'Top 9' }), h('p', { class: 'rsum ' + (tops.length === 9 ? 'good' : 'bad'), text: `${tops.length} of 9. ${msg}` }),
+      h('button', { type: 'button', class: 'primary', text: 'Edit the full ranking', onclick: () => { closeDlg(reviewEl); showRanking(); } }),
       h('div', { class: 'wall' }, ...tiles), h('h3', { text: 'Genre picks' })];
     const pickRows = all.filter(i => val(i, 'pick') === 'Yes'), gl = genreList();
     gl.forEach(g => {

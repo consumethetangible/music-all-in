@@ -33,13 +33,14 @@ The token is kept in that browser's local storage and can touch only the one pri
 ## Using the logger
 
 - **Search** matches artists and album titles, ignoring accents (typing "mol" finds MØL) and a leading "The" or "A". Press `/` to jump to the search box.
-- **Filters:** All, To write (artists with an album still missing a sentence), Top 9, Picks.
-- **Artist view:** one card per album with a cover preview. The Sentence (with a word count) comes first, then Genre and Type dropdowns. **Top 9** and **Genre pick** are tap-to-toggle pills at the top of the card (filled means on, tap again to clear; Top 9 shows its rank when ranked). Artist, Album, Year, Date added, Listen URL, Cover URL, and Write-up URL sit under **Details** (opens automatically for a new, untitled album).
+- **Filters:** All, **Ranked**, To write (artists with an album still missing a sentence), **Needs link** (artists with an album whose Listen link is not yet a normal web link), Top 9, Picks.
+- **Ranked view:** every album can be ranked 1 to N. This view lists albums (not artists) in rank order, with a divider after #9. **The first nine are your Top 9 and label themselves.** Drag a row onto another to take its slot, or tap the rank number and type a new position. The ✕ removes an album from the ranking. Albums not yet ranked sit underneath under "Not ranked yet": tap **+ Rank** to add one at the end, or drag it into the exact slot you want. The search box works inside this view.
+- **Artist view:** one card per album with a cover preview. The **Listen link** is right at the top with an **Open ↗** button (amber dashed while empty, with a note if it is a Bandcamp embed code instead of a link). Then the Sentence (with a word count), then Genre and Type. The **rank pill** shows "Rank it" or the album's position ("#3 · Top 9"); tap it to add or remove the album from the ranking. **Genre pick** is a tap toggle. "Ranking ›" jumps to the album in the Ranked view. Artist, Album, Year, Date added, Cover URL, and Write-up URL sit under **Details** (opens automatically for a new, untitled album).
 - **Find cover:** the button under each cover searches Apple Music and shows candidates. Tap one to fill Cover URL. If it is not there, use the Search Bandcamp link, copy the image address, and paste it into Cover URL.
 - **Next to write:** the button at the top and bottom of each artist jumps to the next artist (A to Z, wrapping) with an album still missing a sentence and puts the cursor in that sentence box. Ctrl or Cmd + Enter in the sentence box does the same.
 - **New artist or album:** type a name that is not in the list and choose "Add as a new artist," or use "Add another album by..." on an artist. New rows get Year 2026 and today's date.
 - **Progress chips** along the top show Written, Top 9, and Picks, and turn red when something is wrong (more than 9, or two picks in one genre).
-- **Review sheet** (tap the Top 9 or Picks chip, or "See the list" on a card): the current Top 9 as a wall of covers with open slots, and the picks by genre. Each row has Open (jump to that album) and Clear (remove the flag and save). **Ranking is optional:** drag a cover onto another, or use the arrows, to put the Top 9 in order.
+- **Review sheet** (tap the Top 9 or Picks chip, or "See the list" on a card): the current Top 9 as a wall of covers with open slots, and the picks by genre. Each row has Open (jump to that album) and Clear (remove the flag and save). The Top 9 here is read-only and follows the ranking. Use "Edit the full ranking" to change it.
 - **Saving:** about two seconds after you stop typing, and immediately when you switch away from the app. Commit messages name the artist, for example "Update Mastodon."
 - **If two devices edit at once,** the app stops and asks whether to load the latest or overwrite. It never overwrites silently.
 - **Offline:** the edit stays on screen with a Try again button.
@@ -56,8 +57,8 @@ The app reads columns by header name, keeps columns it does not know about, keep
 | Year | Always 2026. |
 | Genre | Dropdown. Current list: Black Metal, Death & Doom, Sludge, Stoner & Psych, Prog & Tech, Trad & Thrash, Hardcore & Punk. |
 | Type | LP, EP, Split, Demo, Live, Archival, Reissue, Soundtrack, Single. |
-| Top 9 | `Yes` or blank. Nine expected. |
-| Top 9 Rank | Optional. 1 to 9, written only after you rank in the review sheet (the column is added to the file then). Blank means unranked. |
+| Top 9 | `Yes` or blank. Once you use ranking this is written for you: `Yes` for ranks 1 to 9, blank otherwise. |
+| Rank | Optional. 1 to N across all ranked albums, blank means unranked. The column is added the first time you rank something (an older "Top 9 Rank" column is recognised too). Albums already marked Top 9 are used to seed the ranking. |
 | Genre Pick | `Yes` or blank. One per genre. |
 | Sentence | The one-sentence review. |
 | Listen URL | See "Known issues." |
@@ -111,4 +112,4 @@ Files: `all-in-body.html` and `all-in.css` (suggested location in this repo: `wo
 - One genre per album.
 - Only LPs and EPs count. All other types are kept in the data but left off the page.
 - A row appears on the page once it has a sentence.
-- Top 9 and Genre Pick are plain Yes or blank flags. The Top 9 can optionally be ranked, stored in a separate Top 9 Rank column so the Yes flag stays as is.
+- Genre Pick is a plain Yes or blank flag. Every album can be ranked, and the Top 9 is simply ranks 1 to 9. The Top 9 column is kept in sync as Yes or blank, so the page generator does not need to know about ranking.
