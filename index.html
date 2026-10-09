@@ -135,6 +135,10 @@ button.ghost{background:transparent}
 .note{display:block;margin-top:4px;font-size:12.5px;color:var(--err);font-weight:600}
 .addrow{margin-top:4px}
 
+.relmeta{flex-basis:100%;color:var(--mute);font-size:14px;margin-top:-2px}.relmeta:empty{display:none}
+#fillbar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 14px;background:#33260d;border-bottom:1px solid #6b4d14;font-size:13px}
+#fillbar[hidden]{display:none}#fillbar button{min-height:32px;padding:2px 12px;flex:none}
+
 /* ---------- add albums ---------- */
 .searchbox{display:flex;gap:8px;align-items:center}
 .searchbox #q{flex:1;min-width:0;width:auto}
@@ -339,6 +343,7 @@ body:not([data-state="loading"]) .loading{display:none}
 
 <main class="work">
   <aside class="index" aria-label="Artists">
+    <div id="fillbar" hidden><span id="fillText" role="status"></span><button type="button" id="fillStop">Stop</button></div>
     <div class="searchbox">
       <label class="sr" for="q">Search artists or albums</label>
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l5 5" stroke-linecap="round"/></svg>
@@ -400,6 +405,7 @@ body:not([data-state="loading"]) .loading{display:none}
   <small id="menuWhere"></small>
   <div class="items">
     <button type="button" id="mReload">Reload from GitHub</button>
+    <button type="button" id="mFill">Fill in release dates and labels…</button>
     <button type="button" id="mCopy">Download a copy of the CSV</button>
     <button type="button" id="mSettings">Connection settings</button>
     <button type="button" id="mForget" class="ghost">Forget this device</button>
@@ -455,7 +461,8 @@ body:not([data-state="loading"]) .loading{display:none}
     artist:['artist'], album:['album'], year:['year'], genre:['genre'], type:['type','kind'],
     top9:['top 9','top9'], rank:['top 9 rank','top9 rank','rank'], pick:['genre pick','pick'], sentence:['sentence'],
     listen:['listen url','listen'], cover:['cover url','cover'],
-    writeup:['write-up url','writeup url','write-up'], added:['date added','added']
+    writeup:['write-up url','writeup url','write-up'], added:['date added','added'],
+    releasedate:['release date','released','release'], label:['label','record label']
   };
 
   /* ---------- state ---------- */
@@ -540,7 +547,7 @@ body:not([data-state="loading"]) .loading{display:none}
     for (const [key, names] of Object.entries(ALIASES)) { const idx = norm.findIndex(n => names.includes(n)); if (idx >= 0) cm[key] = idx; }
     if (cm.artist == null || cm.album == null) throw new Error('This does not look like the All-In list. It needs Artist and Album columns.');
     header = hd; rows = parsed.slice(1); col = cm;
-    const missing = Object.keys(ALIASES).filter(k => k !== 'rank' && col[k] == null);
+    const missing = Object.keys(ALIASES).filter(k => !['rank', 'releasedate', 'label'].includes(k) && col[k] == null);
     if (missing.length) showBanner(`These columns were not found, so their fields are hidden: ${missing.join(', ')}.`); else hideBanner();
     selected = keep && rows.some((_, i) => val(i, 'artist').trim() === keep) ? keep : null;
     dirty = false; hi = -1; q.disabled = false; $('#btnAdd').disabled = false; q.value = '';
@@ -778,6 +785,17 @@ body:not([data-state="loading"]) .loading{display:none}
     const stray = all.filter(i => !rankOf(i) && val(i, 'top9') === 'Yes').sort(byArtist);
     return [...ranked, ...stray];
   }
+  const LAZY = { releasedate: 'Release Date', label: 'Label' };   /* columns added the first time something is written */
+  function ensureCol(key, name) { if (col[key] == null) { header.push(name); col[key] = header.length - 1; } }
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmtDate = v => { const t = String(v || '').trim(), m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t); return m && +m[2] >= 1 && +m[2] <= 12 ? `${MONTHS[+m[2] - 1]} ${+m[3]}, ${m[1]}` : t; };
+  function cleanLabel(c) {
+    let t = String(c || '').trim(); if (!t) return '';
+    const lic = /(?:under\s+)?(?:exclusive\s+)?licen[sc]e[ds]?\s+(?:to|from)\s+(.+)$/i.exec(t); if (lic) t = lic[1];
+    t = t.replace(/[℗©]|\((?:p|c)\)/gi, ' ').replace(/\b(?:19|20)\d{2}(?:\s*[-–,]\s*(?:19|20)?\d{2})*\b/g, ' ').replace(/\ball rights reserved\.?/i, '');
+    t = t.replace(/\s+/g, ' ').trim().replace(/^[,.\-–:;&\s]+|[,.\-–:;&\s]+$/g, '');
+    return t.replace(/,?\s+(?:LLC|L\.L\.C\.|Inc\.?|Ltd\.?|Limited|GmbH)$/i, '').trim();
+  }
   function ensureRank() { if (col.rank == null) { header.push('Rank'); col.rank = header.length - 1; } }
   function refreshAllUI() { editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row)); refreshStats(); }
   function applyOrder(list) {
@@ -912,7 +930,7 @@ body:not([data-state="loading"]) .loading{display:none}
   const focusAlbum = i => editor.querySelector(`#r${i}-album`)?.focus();
   const autogrow = el => { el.style.height = 'auto'; el.style.height = Math.max(96, el.scrollHeight + 2) + 'px'; };
   function tf(i, key, label, o = {}) {
-    if (col[key] == null) return null;
+    if (col[key] == null && !o.lazy) return null;
     const id = `r${i}-${key}`;
     const input = o.area ? h('textarea', { id, rows: 3 }) : h('input', { id, type: 'text', placeholder: o.ph || '', autocapitalize: 'none', spellcheck: o.area ? 'true' : 'false' });
     input.value = val(i, key);
@@ -946,7 +964,10 @@ body:not([data-state="loading"]) .loading{display:none}
     const det = el.querySelector('details.more'); if (det) { det.open = true; openDetails.add(i); }
     const term = [val(i, 'artist').trim(), val(i, 'album').trim()].filter(Boolean).join(' ');
     const body = h('div', { class: 'fbody', text: 'Searching Apple Music\u2026' });
-    const setCover = url => { const inp = el.querySelector(`#r${i}-cover`); if (inp) inp.value = url; onEdit(i, 'cover', url); box.remove(); toast('Cover set'); };
+    const setCover = c => {
+      const url = bigArt(c.art), inp = el.querySelector(`#r${i}-cover`); if (inp) inp.value = url; onEdit(i, 'cover', url);
+      applyLookup(i, { date: c.date, label: c.label }, ['releasedate', 'label'], true); box.remove(); toast('Cover set');
+    };
     const link = h('input', { type: 'text', placeholder: 'https://music.apple.com/us/album/\u2026', autocapitalize: 'none', spellcheck: 'false', 'aria-label': 'Apple Music album link' });
     const linkMsg = h('span', { class: 'note soft' });
     const useLink = async () => {
@@ -965,8 +986,8 @@ body:not([data-state="loading"]) .loading{display:none}
     if (!term) { body.textContent = 'Add an artist and album first.'; return; }
     appleCandidates(val(i, 'artist').trim(), val(i, 'album').trim(), true).then(res => {
       if (!res.length) { body.textContent = 'Apple Music search did not find it. Very new releases can take a while to show up in search. Paste an album link below instead.'; return; }
-      body.replaceChildren(h('div', { class: 'fgrid' }, ...res.slice(0, 12).map(r => h('button', { type: 'button', class: 'fopt', onclick: () => setCover(bigArt(r.art)) },
-        h('img', { src: r.art, alt: '', referrerpolicy: 'no-referrer' }), h('span', {}, h('strong', { text: r.name })), h('em', { text: `${r.artist}${r.year ? ', ' + r.year : ''}` })))));
+      body.replaceChildren(h('div', { class: 'fgrid' }, ...res.slice(0, 12).map(r => h('button', { type: 'button', class: 'fopt', onclick: () => setCover(r), title: r.label ? `${r.name}, ${r.label}` : r.name },
+        h('img', { src: r.art, alt: '', referrerpolicy: 'no-referrer' }), h('span', {}, h('strong', { text: r.name })), h('em', { text: `${r.artist}${r.date ? ', ' + fmtDate(r.date) : ''}` })))));
     }).catch(() => { body.textContent = 'Could not reach Apple Music. Paste an album link below, or try Bandcamp.'; });
   }
   function deleteAlbum(i) {
@@ -991,7 +1012,7 @@ body:not([data-state="loading"]) .loading{display:none}
   function card(i) {
     const el = h('article', { class: 'album', 'data-row': i },
       h('div', { class: 'cvslot' }, h('div', { class: 'cvimg' }), col.cover != null ? h('button', { type: 'button', class: 'fcov', text: 'Find cover', onclick: () => finderFor(el, i) }) : null),
-      h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' }),
+      h('div', { class: 'ahead' }, h('span', { class: 'atitle' }), h('span', { class: 'tags' }), h('div', { class: 'relmeta' }),
         h('div', { class: 'pills' }, rankPill(i), pill(i, 'pick', 'Genre pick', 'pick'), h('button', { type: 'button', class: 'pill ghost', text: 'Ranking \u203a', onclick: () => showRanking(i) }), h('button', { type: 'button', class: 'pill ghost danger', text: 'Delete album', onclick: () => deleteAlbum(i) })),
         h('span', { class: 'note', 'data-note': 'pick' })),
       h('div', { class: 'fields' },
@@ -999,9 +1020,10 @@ body:not([data-state="loading"]) .loading{display:none}
         h('div', { class: 'row' }, tf(i, 'sentence', 'Sentence', { area: true, extra: h('span', { class: 'count', 'data-count': '' }) })),
         h('div', { class: 'row r2' }, sf(i, 'genre', 'Genre', genreList(), 'Not set'), sf(i, 'type', 'Type', TYPES, 'Not set (counts as LP)')),
         h('details', { class: 'more', open: openDetails.has(i) || !val(i, 'album').trim(), ontoggle: e => { e.target.open ? openDetails.add(i) : openDetails.delete(i); } },
-          h('summary', { text: 'Details: artist, album, year, cover, write-up' }),
+          h('summary', { text: 'Details: artist, album, year, release, cover, write-up' }),
           h('div', { class: 'row r2' }, tf(i, 'artist', 'Artist', { commit: 'change' }), tf(i, 'album', 'Album')),
           h('div', { class: 'row r2' }, tf(i, 'year', 'Year'), tf(i, 'added', 'Date added', { ph: 'yyyy-mm-dd' })),
+          h('div', { class: 'row r2' }, tf(i, 'releasedate', 'Release date', { ph: 'yyyy-mm-dd', lazy: true }), tf(i, 'label', 'Label', { lazy: true })),
           h('div', { class: 'row r2' }, tf(i, 'cover', 'Cover URL', { ph: 'Image link' }), tf(i, 'writeup', 'Write-up URL', { ph: 'Leave blank if there is none' })))));
     el.querySelector(`#r${i}-sentence`)?.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); goNext(); } });
     refreshCard(el, i); return el;
@@ -1049,6 +1071,7 @@ body:not([data-state="loading"]) .loading{display:none}
   function refreshCard(el, i) {
     el.classList.toggle('top9', val(i, 'top9') === 'Yes'); el.classList.toggle('ispick', val(i, 'pick') === 'Yes');
     el.querySelector('.atitle').textContent = val(i, 'album') || 'Untitled album';
+    const rm = el.querySelector('.relmeta'); if (rm) rm.textContent = [fmtDate(val(i, 'releasedate')), val(i, 'label').trim()].filter(Boolean).join(' \u00b7 ');
     const slot = el.querySelector('.cvimg'), url = val(i, 'cover').trim();
     if (slot.dataset.url !== url || !slot.firstChild) { slot.dataset.url = url; slot.replaceChildren(cover(i, 'm')); }
     el.querySelectorAll('[data-pill="pick"]').forEach(b => {
@@ -1074,6 +1097,7 @@ body:not([data-state="loading"]) .loading{display:none}
     if (c) { const n = val(i, 'sentence').trim().split(/\s+/).filter(Boolean).length; c.textContent = n ? `${n} word${n === 1 ? '' : 's'}` : ''; }
   }
   function onEdit(i, key, v) {
+    if (col[key] == null && LAZY[key]) ensureCol(key, LAZY[key]);
     setVal(i, key, v); touched.add(val(i, 'artist').trim() || 'new artist'); markDirty();
     if (key === 'artist') { selected = v.trim() || selected; renderEditor(); renderList(); refreshStats(); return; }
     editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row));
@@ -1172,7 +1196,7 @@ body:not([data-state="loading"]) .loading{display:none}
     const r = await fetch(APPLE + path); if (!r.ok) throw new Error('Apple Music said ' + r.status);
     return (await r.json()).results || [];
   }
-  const asCand = x => (x.artworkUrl100 && x.collectionName) ? { id: String(x.collectionId || ''), artist: x.artistName || '', name: x.collectionName, year: (x.releaseDate || '').slice(0, 4), art: x.artworkUrl100 } : null;
+  const asCand = x => (x.artworkUrl100 && x.collectionName) ? { id: String(x.collectionId || ''), artist: x.artistName || '', name: x.collectionName, date: (x.releaseDate || '').slice(0, 10), label: cleanLabel(x.copyright), art: x.artworkUrl100 } : null;
   const isArtist = (artist, c) => { const fa = fold(artist), fx = fold(c.artist); return !!fx && (fx.includes(fa) || fa.includes(fx)); };
   function isMatch(artist, album, c) {
     const fb = baseTitle(album), n = baseTitle(c.name);
@@ -1192,7 +1216,8 @@ body:not([data-state="loading"]) .loading{display:none}
       try { add(await appleGet(steps[k])); } catch (e) { if (!found.size && k === 0) throw e; break; }
       if (!full && [...found.values()].some(c => isMatch(artist, album, c))) break;
     }
-    const score = c => isMatch(artist, album, c) ? 3 : isArtist(artist, c) ? 2 : 1;
+    const exact = c => fold(c.name.replace(/\s-\s(EP|Single)$/i, '')).trim() === fold(album).trim();
+    const score = c => (isMatch(artist, album, c) ? 3 : isArtist(artist, c) ? 2 : 1) * 2 + (exact(c) ? 1 : 0);
     return [...found.values()].sort((a, b) => score(b) - score(a));
   }
   const bigArt = u => u.replace(/\d+x\d+bb/, '600x600bb');
@@ -1203,25 +1228,32 @@ body:not([data-state="loading"]) .loading{display:none}
     const cc = (String(link).match(/music\.apple\.com\/([a-z]{2})\//i) || [])[1];
     const res = await appleGet(`/lookup?id=${m[1]}${cc ? '&country=' + cc : ''}`);
     const hit = res.find(x => x.artworkUrl100); if (!hit) throw new Error('Apple Music did not return artwork for that link.');
-    return bigArt(hit.artworkUrl100);
+    return asCand(hit) || { art: hit.artworkUrl100, date: (hit.releaseDate || '').slice(0, 10), label: cleanLabel(hit.copyright) };
   }
   async function lookupApple(artist, album) {
     const hit = (await appleCandidates(artist, album, false)).find(c => isMatch(artist, album, c));
     if (!hit) return null;
     const t = /\s-\s(EP|Single)$/i.exec(hit.name);
-    return { cover: bigArt(hit.art), type: t ? (t[1].toUpperCase() === 'EP' ? 'EP' : 'Single') : 'LP' };
+    return { cover: bigArt(hit.art), type: t ? (t[1].toUpperCase() === 'EP' ? 'EP' : 'Single') : 'LP', date: hit.date, label: hit.label };
   }
-  function applyLookup(i, res) {
+  /* fills blanks only, never overwrites what you typed */
+  function applyLookup(i, res, fields = ['cover', 'type', 'releasedate', 'label'], quiet = false) {
     if (!res) return false; let ch = false;
-    if (col.cover != null && !val(i, 'cover').trim()) { setVal(i, 'cover', res.cover); ch = true; }
-    if (col.type != null && !val(i, 'type')) { setVal(i, 'type', res.type); ch = true; }
+    const fill = (key, v) => {
+      if (!v || !fields.includes(key)) return;
+      if (col[key] == null) { if (!LAZY[key]) return; ensureCol(key, LAZY[key]); }
+      if (!val(i, key).trim()) { setVal(i, key, v); ch = true; if (LAZY[key]) touched.add('release info'); }
+    };
+    fill('cover', res.cover); fill('type', res.type); fill('releasedate', res.date); fill('label', res.label);
     if (!ch) return false;
     markDirty();
     const el = editor.querySelector(`.album[data-row="${i}"]`);
-    if (el) { const ci = el.querySelector(`#r${i}-cover`); if (ci) ci.value = val(i, 'cover'); const ty = el.querySelector(`#r${i}-type`); if (ty) ty.value = val(i, 'type'); refreshCard(el, i); }
-    renderList(); return true;
+    if (el) {
+      ['cover', 'type', 'releasedate', 'label'].forEach(k => { const f = el.querySelector(`#r${i}-${k}`); if (f) f.value = val(i, k); });
+      refreshCard(el, i);
+    }
+    if (!quiet) renderList(); return true;
   }
-  /* one at a time, with a pause, because Apple limits how fast you can ask */
   async function lookupMany(ids, onStep) {
     let ok = 0, failed = false;
     const jobs = ids.map(i => ({ i, artist: val(i, 'artist'), album: val(i, 'album') }));
@@ -1304,12 +1336,42 @@ body:not([data-state="loading"]) .loading{display:none}
   const menu = $('#menu');
   $('#btnMenu').addEventListener('click', () => {
     $('#menuWhere').textContent = store ? (store.kind === 'github' ? `${store.label}, ${store.name}` : store.label) : 'Not connected';
-    $('#mReload').hidden = !(store && store.kind === 'github'); $('#mCopy').disabled = !rows.length;
+    $('#mReload').hidden = !(store && store.kind === 'github'); $('#mCopy').disabled = !rows.length; $('#mFill').disabled = !rows.length || !store;
     openDlg(menu);
   });
   $('#mClose').addEventListener('click', () => closeDlg(menu));
   $('#mReload').addEventListener('click', () => { closeDlg(menu); refreshRemote(true); });
   $('#mCopy').addEventListener('click', () => { closeDlg(menu); downloadCopy(); });
+  /* one-time pass over the albums already in the list */
+  let fillStop = false, fillRunning = false;
+  const waitStop = async ms => { for (let t = 0; t < ms && !fillStop; t += 250) await sleep(250); };
+  $('#fillStop').addEventListener('click', () => { fillStop = true; });
+  async function fillReleaseInfo() {
+    if (fillRunning) return;
+    const jobs = rows.map((_, i) => i).filter(i => val(i, 'artist').trim() && val(i, 'album').trim() && SHOWN_TYPES.includes(val(i, 'type')) && (!val(i, 'releasedate').trim() || !val(i, 'label').trim()))
+      .map(i => ({ i, artist: val(i, 'artist'), album: val(i, 'album') }));
+    if (!jobs.length) { toast('Every album already has a release date and a label.'); return; }
+    const mins = Math.max(1, Math.round(jobs.length * 1.6 / 60));
+    if (!confirm(`Look up the release date and label on Apple Music for ${jobs.length} albums?\n\nThis takes roughly ${mins} minute${mins === 1 ? '' : 's'}. You can keep working while it runs, and Stop halts it. Only blank fields are filled, and it saves as it goes.`)) return;
+    fillRunning = true; fillStop = false; $('#fillbar').hidden = false;
+    let n = 0, filled = 0, missed = 0, aborted = false, since = 0;
+    for (const { i, artist, album } of jobs) {
+      if (fillStop) break; n++;
+      $('#fillText').textContent = `Filling release info from Apple Music: ${n} of ${jobs.length}`;
+      let res = null, ok = false;
+      for (let tries = 0; tries < 2 && !ok && !fillStop; tries++) {
+        try { res = await lookupApple(artist, album); ok = true; }
+        catch (_) { if (tries === 0) { $('#fillText').textContent = 'Apple asked us to slow down. Waiting 30 seconds…'; await waitStop(30000); } }
+      }
+      if (!ok) { aborted = !fillStop; break; }
+      if (val(i, 'artist') === artist && val(i, 'album') === album && applyLookup(i, res, ['releasedate', 'label'], true)) { filled++; since++; } else missed++;
+      if (since >= 25) { since = 0; await save(); }
+      await sleep(450);
+    }
+    $('#fillbar').hidden = true; fillRunning = false; renderList(); refreshStats();
+    toast(`${aborted ? 'Apple stopped answering. ' : fillStop ? 'Stopped. ' : ''}Filled ${filled}${missed ? `, no confident match for ${missed}` : ''}.${aborted || fillStop ? ' Run it again to continue.' : ''}`);
+  }
+  $('#mFill').addEventListener('click', () => { closeDlg(menu); fillReleaseInfo(); });
   $('#mSettings').addEventListener('click', () => { closeDlg(menu); showWelcome(); });
   $('#mForget').addEventListener('click', async () => {
     closeDlg(menu);
