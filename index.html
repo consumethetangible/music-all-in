@@ -207,6 +207,7 @@ details.more[open] summary{margin-bottom:10px}
 .fopt img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px;background:#2a2222}
 .fopt span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fopt em{color:var(--mute)}
+.fmore{margin:10px 0 0}
 .fnote{margin:10px 0 0;font-size:13px;color:var(--mute)} .fnote a{color:var(--amber)}
 .subrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 22px;max-width:1020px}
 .subrow .sub{margin:0}
@@ -976,19 +977,29 @@ body:not([data-state="loading"]) .loading{display:none}
     };
     link.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); useLink(); } });
     link.addEventListener('paste', () => setTimeout(useLink, 0));
+    const linkLabel = h('label', { text: 'Or paste an Apple Music album link' });
+    const flink = h('div', { class: 'flink' }, linkLabel, h('div', { class: 'lrow' }, link, h('button', { type: 'button', text: 'Use', onclick: useLink })), linkMsg);
     const box = h('div', { class: 'finder' },
       h('div', { class: 'fhead' }, h('strong', { text: 'Pick a cover' }), h('button', { type: 'button', class: 'ghost', text: 'Close', onclick: () => box.remove() })),
       body,
-      h('div', { class: 'flink' }, h('label', { text: 'Or paste an Apple Music album link' }), h('div', { class: 'lrow' }, link, h('button', { type: 'button', text: 'Use', onclick: useLink })), linkMsg),
+      flink,
       h('p', { class: 'fnote' }, 'In the Music app: right-click the album, Share, Copy Link. Or ', h('a', { href: `https://bandcamp.com/search?q=${enc(term)}&item_type=a`, target: '_blank', rel: 'noopener', text: 'search Bandcamp' }),
         ', right-click the cover, copy the image address, and paste it into Cover URL (under Details).'));
     el.querySelector('.fields').prepend(box);
     if (!term) { body.textContent = 'Add an artist and album first.'; return; }
-    appleCandidates(val(i, 'artist').trim(), val(i, 'album').trim(), true).then(res => {
-      if (!res.length) { body.textContent = 'Apple Music search did not find it. Very new releases can take a while to show up in search. Paste an album link below instead.'; return; }
-      body.replaceChildren(h('div', { class: 'fgrid' }, ...res.slice(0, 12).map(r => h('button', { type: 'button', class: 'fopt', onclick: () => setCover(r), title: r.label ? `${r.name}, ${r.label}` : r.name },
-        h('img', { src: r.art, alt: '', referrerpolicy: 'no-referrer' }), h('span', {}, h('strong', { text: r.name })), h('em', { text: `${r.artist}${r.date ? ', ' + fmtDate(r.date) : ''}` })))));
-    }).catch(() => { body.textContent = 'Could not reach Apple Music. Paste an album link below, or try Bandcamp.'; });
+    const artist = val(i, 'artist').trim(), album = val(i, 'album').trim();
+    const grid = list => h('div', { class: 'fgrid' }, ...list.slice(0, 12).map(r => h('button', { type: 'button', class: 'fopt', onclick: () => setCover(r), title: r.label ? `${r.name}, ${r.label}` : r.name },
+      h('img', { src: r.art, alt: '', referrerpolicy: 'no-referrer' }), h('span', {}, h('strong', { text: r.name })), h('em', { text: `${r.artist}${r.date ? ', ' + fmtDate(r.date) : ''}` }))));
+    const missed = msg => { body.textContent = msg; linkLabel.textContent = 'Paste the Apple Music album link'; flink.style.margin = '10px 0 12px'; box.insertBefore(flink, body); link.focus({ preventScroll: true }); };
+    appleCandidates(artist, album, true).then(res => {
+      const hits = res.filter(c => isMatch(artist, album, c)), rest = res.filter(c => !hits.includes(c));
+      if (!hits.length) {
+        missed('No exact match in Apple’s search. Brand-new and indie releases often are not searchable yet even when they are in the catalog. Paste the album link and it will work.');
+        if (rest.length) { const more = h('button', { type: 'button', class: 'ghost', text: `Show closest guesses (${Math.min(rest.length, 12)})`, onclick: () => more.replaceWith(grid(rest)) }); body.append(h('div', { class: 'fmore' }, more)); }
+        return;
+      }
+      body.replaceChildren(grid(hits));
+    }).catch(() => missed('Could not reach Apple Music. Paste an album link below, or try Bandcamp.'));
   }
   function deleteAlbum(i) {
     const artist = val(i, 'artist').trim(), album = val(i, 'album').trim() || 'this untitled album';
@@ -1207,10 +1218,12 @@ body:not([data-state="loading"]) .loading{display:none}
   async function appleCandidates(artist, album, full) {
     const found = new Map(), q1 = [artist, album].filter(Boolean).join(' ');
     const add = list => list.map(asCand).filter(Boolean).forEach(c => { const k = c.id || (c.artist + '|' + c.name); if (!found.has(k)) found.set(k, c); });
-    const steps = [`/search?term=${enc(q1)}&media=music&entity=album&limit=10`];
-    if (album) steps.push(`/search?term=${enc(album)}&media=music&entity=album&limit=25`);
-    if (artist) steps.push(`/search?term=${enc(artist)}&media=music&entity=album&limit=50`);
-    steps.push(`/search?term=${enc(q1)}&media=music&entity=song&limit=20`);
+    const plain = baseTitle(album), alt = plain && plain !== fold(album).trim() ? [artist, plain].filter(Boolean).join(' ') : '';
+    const steps = [`/search?term=${enc(q1)}&media=music&entity=album&limit=10&country=us`];
+    if (alt) steps.push(`/search?term=${enc(alt)}&media=music&entity=album&limit=10&country=us`);
+    if (album) steps.push(`/search?term=${enc(album)}&media=music&entity=album&attribute=albumTerm&limit=25&country=us`);
+    if (artist) steps.push(`/search?term=${enc(artist)}&media=music&entity=album&attribute=artistTerm&limit=50&country=us`);
+    steps.push(`/search?term=${enc(q1)}&media=music&entity=song&limit=20&country=us`);
     for (let k = 0; k < steps.length; k++) {
       if (k) await sleep(350);
       try { add(await appleGet(steps[k])); } catch (e) { if (!found.size && k === 0) throw e; break; }
