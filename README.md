@@ -32,6 +32,8 @@ The token is kept in that browser's local storage and can touch only the one pri
 
 ## Using the logger
 
+- **Lists:** each list is its own CSV in the private repo (Nine Circles 2026, 2027, CTT, and so on). The **list button at the top of the artist column** switches between them and remembers the last one per device. **+ New list** creates a blank CSV with the same columns (the name suggests next year's, like 2027). Each list has its own **genres** and can switch **ranking/Top 9** and **genre picks** on or off, set when you create it and editable under **Menu, List settings**. Settings are stored in `all-in-lists.json` next to the CSVs. A list with no saved settings behaves like the 2026 list (the original seven genres, everything on). Lists are the `.csv` files in the same folder as the file named on the connect screen.
+
 - **Search** matches artists and album titles, ignoring accents (typing "mol" finds MØL) and a leading "The" or "A". Press `/` to jump to the search box.
 - **Filters:** All, **Ranked**, **New**, To write (artists with an album still missing a sentence), **Needs link** (artists with an album whose Listen link is not yet a normal web link), **Needs cover**, Top 9, Picks.
 - **Ranked view:** every album can be ranked 1 to N. This view lists albums (not artists) in rank order, with a divider after #9. **The first nine are your Top 9 and label themselves.** Drag a row onto another to take its slot, or tap the rank number and type a new position. The ✕ removes an album from the ranking. Albums not yet ranked sit underneath under "Not ranked yet": tap **+ Rank** to add one at the end, or drag it into the exact slot you want. The search box works inside this view.
