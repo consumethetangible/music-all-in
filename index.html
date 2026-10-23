@@ -121,6 +121,11 @@ button.ghost{background:transparent}
 .tag.top{background:var(--red);border-color:var(--red);color:#fff}
 .tag.pick{border-color:var(--amber);color:var(--amber)}
 .tag.off{border-style:dashed}
+.tag.rate{border-color:var(--red);color:var(--ink)}.tag.rate b{color:var(--red);letter-spacing:1px;margin-left:5px;font-weight:700}
+.tag.phys{border-color:var(--ink);color:var(--ink)}
+.f.chkf{align-self:end}
+.f label.chk{display:flex;align-items:center;gap:10px;min-height:44px;margin:0;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer}
+.f .chk input{width:22px;min-height:22px;height:22px;padding:0;flex:none;accent-color:var(--red)}
 .row{display:grid;gap:12px 14px;margin:0 0 12px}
 .r2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .r5{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -361,7 +366,7 @@ body:not([data-state="loading"]) .loading{display:none}
 
 <main class="work">
   <aside class="index" aria-label="Artists">
-    <button type="button" class="listbtn" id="btnList" hidden title="Switch or create a list"><span id="listName"></span><small>Lists \u25be</small></button>
+    <button type="button" class="listbtn" id="btnList" hidden title="Switch or create a list"><span id="listName"></span><small>Lists &#9662;</small></button>
     <div id="fillbar" hidden><span id="fillText" role="status"></span><button type="button" id="fillStop">Stop</button></div>
     <div class="searchbox">
       <label class="sr" for="q">Search artists or albums</label>
@@ -504,7 +509,8 @@ body:not([data-state="loading"]) .loading{display:none}
     top9:['top 9','top9'], rank:['top 9 rank','top9 rank','rank'], pick:['genre pick','pick'], sentence:['sentence'],
     listen:['listen url','listen'], cover:['cover url','cover'],
     writeup:['write-up url','writeup url','write-up'], added:['date added','added'],
-    releasedate:['release date','released','release'], label:['label','record label']
+    releasedate:['release date','released','release'], label:['label','record label'],
+    rating:['rating','score'], physical:['physical copy','physical','owned']
   };
 
   /* ---------- state ---------- */
@@ -513,7 +519,7 @@ body:not([data-state="loading"]) .loading{display:none}
   let store = null, version = null;
   /* each list can carry its own genres and switch ranking/picks off; a list with no saved settings behaves like the 2026 list */
   const DEFAULT_LIST = () => ({ genres: [...GENRES], top9: true, picks: true });
-  const DEFAULT_HEADER = ['Artist','Album','Year','Genre','Type','Top 9','Top 9 Rank','Genre Pick','Sentence','Listen URL','Cover URL','Write-up URL','Date Added','Release Date','Label'];
+  const DEFAULT_HEADER = ['Artist','Album','Year','Genre','Type','Top 9','Top 9 Rank','Genre Pick','Sentence','Listen URL','Cover URL','Write-up URL','Date Added','Release Date','Label','Rating','Physical Copy'];
   const SETTINGS_FILE = 'all-in-lists.json';
   let listCfg = DEFAULT_LIST(), allCfg = {};
   let selected = null, shown = [], hi = -1, filter = 'all';
@@ -594,7 +600,7 @@ body:not([data-state="loading"]) .loading{display:none}
     for (const [key, names] of Object.entries(ALIASES)) { const idx = norm.findIndex(n => names.includes(n)); if (idx >= 0) cm[key] = idx; }
     if (cm.artist == null || cm.album == null) throw new Error('This does not look like the All-In list. It needs Artist and Album columns.');
     header = hd; rows = parsed.slice(1); col = cm;
-    const missing = Object.keys(ALIASES).filter(k => !['rank', 'releasedate', 'label'].includes(k) && col[k] == null);
+    const missing = Object.keys(ALIASES).filter(k => !['rank', 'releasedate', 'label', 'rating', 'physical'].includes(k) && col[k] == null);
     if (missing.length) showBanner(`These columns were not found, so their fields are hidden: ${missing.join(', ')}.`); else hideBanner();
     selected = keep && rows.some((_, i) => val(i, 'artist').trim() === keep) ? keep : null;
     dirty = false; hi = -1; q.disabled = false; $('#btnAdd').disabled = false; q.value = '';
@@ -814,14 +820,17 @@ body:not([data-state="loading"]) .loading{display:none}
     rows.forEach((_, i) => { const a = val(i, 'artist').trim(); if (!a) return; if (!m.has(a)) m.set(a, []); m.get(a).push(i); });
     return [...m].map(([artist, idx]) => ({ artist, idx })).sort((x, y) => sortKey(x.artist).localeCompare(sortKey(y.artist)));
   }
-  const FILTERS = [['all', 'All'], ['ranked', 'Ranked'], ['new', 'New'], ['towrite', 'To write'], ['nolink', 'Needs link'], ['nocover', 'Needs cover'], ['top9', 'Top 9'], ['picks', 'Picks']];
+  const FILTERS = [['all', 'All'], ['ranked', 'Ranked'], ['new', 'New'], ['towrite', 'To write'], ['nolink', 'Needs link'], ['nocover', 'Needs cover'], ['top9', 'Top 9'], ['picks', 'Picks'], ['physical', 'Physical'], ['unrated', 'Unrated'], ['omfg', 'OMFG!']];
   const filterFn = { all: () => true, ranked: () => true,
     new: g => g.idx.some(i => addedIds.has(i) || val(i, 'added') === today()),
     nocover: g => g.idx.some(i => !/^https?:\/\//i.test(val(i, 'cover').trim())),
     nolink: g => g.idx.some(i => !/^https?:\/\//i.test(val(i, 'listen').trim())),
     towrite: g => g.idx.some(i => !val(i, 'sentence').trim()),
     top9: g => g.idx.some(i => val(i, 'top9') === 'Yes'),
-    picks: g => g.idx.some(i => val(i, 'pick') === 'Yes') };
+    picks: g => g.idx.some(i => val(i, 'pick') === 'Yes'),
+    physical: g => g.idx.some(i => val(i, 'physical') === 'Yes'),
+    unrated: g => g.idx.some(i => !ratingOf(i)),
+    omfg: g => g.idx.some(i => val(i, 'rating').trim() === '4') };
   const activeFilters = () => FILTERS.filter(([k]) => (!['ranked', 'top9'].includes(k) || listCfg.top9) && (k !== 'picks' || listCfg.picks));
   function renderFilters() {
     $('#filters').replaceChildren(...activeFilters().map(([k, label]) => h('button', { type: 'button', text: label, 'aria-pressed': String(filter === k), onclick: () => { filter = k; hi = q.value.trim() ? 0 : -1; renderFilters(); renderList(); } })));
@@ -868,7 +877,7 @@ body:not([data-state="loading"]) .loading{display:none}
     const stray = all.filter(i => !rankOf(i) && val(i, 'top9') === 'Yes').sort(byArtist);
     return [...ranked, ...stray];
   }
-  const LAZY = { releasedate: 'Release Date', label: 'Label' };   /* columns added the first time something is written */
+  const LAZY = { releasedate: 'Release Date', label: 'Label', rating: 'Rating', physical: 'Physical Copy' };   /* columns added the first time something is written */
   function ensureCol(key, name) { if (col[key] == null) { header.push(name); col[key] = header.length - 1; } }
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const fmtDate = v => { const t = String(v || '').trim(), m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t); return m && +m[2] >= 1 && +m[2] <= 12 ? `${MONTHS[+m[2] - 1]} ${+m[3]}, ${m[1]}` : t; };
@@ -1028,6 +1037,23 @@ body:not([data-state="loading"]) .loading{display:none}
     sel.value = cur; sel.addEventListener('change', () => onEdit(i, key, sel.value));
     return h('div', { class: 'f' }, h('label', { for: id, text: label }), sel, key === 'pick' ? h('span', { class: 'note', 'data-note': 'pick' }) : null);
   }
+  /* rating is stored as 1 to 4; the words and circles are only for display */
+  const RATINGS = [['1', 'Oof!'], ['2', 'Okay...'], ['3', 'Oh, My!'], ['4', 'OMFG!']];
+  const dots = n => '\u25cf'.repeat(+n || 0);
+  const ratingOf = i => { const r = RATINGS.find(([v]) => v === String(val(i, 'rating')).trim()); return r || null; };
+  function rateField(i) {
+    const id = `r${i}-rating`, cur = ratingOf(i);
+    const sel = h('select', { id }, h('option', { value: '', text: 'Not rated' }), ...RATINGS.map(([v, w]) => h('option', { value: v, text: `${w}  ${dots(v)}` })));
+    sel.value = cur ? cur[0] : '';
+    sel.addEventListener('change', () => onEdit(i, 'rating', sel.value));
+    return h('div', { class: 'f' }, h('label', { for: id, text: 'Rating' }), sel);
+  }
+  function physField(i) {
+    const id = `r${i}-physical`, box = h('input', { id, type: 'checkbox' });
+    box.checked = val(i, 'physical') === 'Yes';
+    box.addEventListener('change', () => onEdit(i, 'physical', box.checked ? 'Yes' : ''));
+    return h('div', { class: 'f chkf' }, h('label', { class: 'chk', for: id }, box, h('span', { text: 'I bought a physical copy' })));
+  }
   const openDetails = new Set();
   function pill(i, key, label, cls) {
     if (col[key] == null) return null;
@@ -1112,6 +1138,7 @@ body:not([data-state="loading"]) .loading{display:none}
         listenRow(i),
         h('div', { class: 'row' }, tf(i, 'sentence', 'Sentence', { area: true, extra: h('span', { class: 'count', 'data-count': '' }) })),
         h('div', { class: 'row r2' }, sf(i, 'genre', 'Genre', genreList(), 'Not set'), sf(i, 'type', 'Type', TYPES, 'Not set (counts as LP)')),
+        h('div', { class: 'row r2' }, rateField(i), physField(i)),
         h('details', { class: 'more', open: openDetails.has(i) || !val(i, 'album').trim(), ontoggle: e => { e.target.open ? openDetails.add(i) : openDetails.delete(i); } },
           h('summary', { text: 'Details: artist, album, year, release, cover, write-up' }),
           h('div', { class: 'row r2' }, tf(i, 'artist', 'Artist', { commit: 'change' }), tf(i, 'album', 'Album')),
@@ -1184,6 +1211,8 @@ body:not([data-state="loading"]) .loading{display:none}
     const t = val(i, 'type');
     if (t && !SHOWN_TYPES.includes(t)) tags.append(h('span', { class: 'tag off', text: `${t}, left off the page` }));
     else if (t === 'EP') tags.append(h('span', { class: 'tag', text: 'EP' }));
+    const rt = ratingOf(i); if (rt) tags.append(h('span', { class: 'tag rate', title: `Rated ${rt[0]} of 4` }, rt[1], h('b', { text: dots(rt[0]) })));
+    if (val(i, 'physical') === 'Yes') tags.append(h('span', { class: 'tag phys', text: 'Physical copy' }));
     const note = el.querySelector('[data-note="pick"]');
     if (note) { const r = pickRivals(i); note.textContent = r.length ? `${r.map(j => val(j, 'artist')).join(', ')} already has the ${val(i, 'genre')} pick.` : ''; }
     const c = el.querySelector('[data-count]');
