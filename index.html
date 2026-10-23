@@ -51,9 +51,9 @@ button.ghost{background:transparent}
 .brand{grid-area:brand;display:flex;align-items:center;gap:10px;min-width:0}
 .brand svg{width:32px;height:32px;flex:none}
 .brand b{font:700 28px/1 var(--head);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chips{grid-area:chips;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.chips{grid-area:chips;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;display:flex;align-items:baseline;gap:8px;border-radius:999px;padding:6px 14px;min-height:38px;
+.chip{flex:none;display:flex;align-items:baseline;gap:6px;border-radius:999px;padding:6px 11px;min-height:38px;
   background:linear-gradient(90deg,rgba(240,161,58,.26) var(--p,0%),transparent var(--p,0%)),var(--surface);border-color:var(--line2)}
 .chip small{font-size:12.5px;color:var(--mute)}
 .chip strong{font-size:15px}
@@ -1237,11 +1237,16 @@ body:not([data-state="loading"]) .loading{display:none}
     const gl = genreList(), have = gl.filter(g => per[g]).length, dupes = Object.keys(per).filter(g => per[g] > 1);
     const pct = rows.length ? Math.round(written / rows.length * 100) : 0;
     const chip = (label, value, cls, onclick, extra = {}) => h('button', { type: 'button', class: 'chip ' + cls, onclick, ...extra }, h('small', { text: label }), h('strong', { text: value }));
+    const rated = all.filter(ratingOf), phys = all.filter(i => val(i, 'physical') === 'Yes').length;
+    const byRating = RATINGS.map(([v, w]) => `${w} ${rated.filter(i => val(i, 'rating').trim() === v).length}`).join(', ');
+    const goFilter = f => () => { filter = f; renderFilters(); renderList(); if (isNarrow()) leaveEditor(); };
     chips.replaceChildren(...[
       chip('Written', `${written} of ${rows.length}`, '', () => { filter = 'towrite'; renderFilters(); renderList(); if (isNarrow()) leaveEditor(); }, { style: `--p:${pct}%`, title: 'Show artists with albums still to write' }),
       listCfg.top9 && chip('Ranked', `${nRanked} of ${rows.length}`, '', () => showRanking(), { title: 'Rank and sort every album' }),
       listCfg.top9 && chip('Top 9', `${top} of 9`, top === 9 ? 'ok' : '', openReview, { title: 'See the Top 9' }),
-      listCfg.picks && chip('Picks', `${have} of ${listCfg.genres.length}${dupes.length ? ', ' + dupes.length + ' doubled' : ''}`, dupes.length ? 'bad' : (have >= listCfg.genres.length ? 'ok' : ''), openReview, { title: 'Review genre picks' })].filter(Boolean));
+      listCfg.picks && chip('Picks', `${have} of ${listCfg.genres.length}${dupes.length ? ', ' + dupes.length + ' doubled' : ''}`, dupes.length ? 'bad' : (have >= listCfg.genres.length ? 'ok' : ''), openReview, { title: 'Review genre picks' }),
+      chip('Rated', `${rated.length} of ${rows.length}`, '', goFilter('unrated'), { title: `${byRating}. Tap to see artists with something still to rate` }),
+      chip('Physical', String(phys), '', goFilter('physical'), { title: 'Albums you own on physical media' })].filter(Boolean));
     if (dlgOpen($('#review'))) renderReview();
   }
 
