@@ -50,7 +50,8 @@ The token is kept in that browser's local storage and can touch only the one pri
   - You can also type `Artist - Album` in the search box and choose "Add ... by ...".
   - The **New** filter shows artists added this session or dated today. **Needs cover** shows albums with no cover link yet.
 - **Other ways to add:** type a name that is not in the list and choose "Add as a new artist," or use "Add another album by..." on an artist. New rows get Year 2026 and today's date.
-- **Progress chips** along the top show Written, Top 9, and Picks, and turn red when something is wrong (more than 9, or two picks in one genre).
+- **Rating and physical copy:** each album card has a **Rating** dropdown (Not rated, Oof!, Okay..., Oh, My!, OMFG!, each with its circles) and an **I bought a physical copy** checkbox, just under Genre and Type. Both show as tags next to the album title, so you can see them without opening anything. Filters: **Physical** (artists with at least one album you own), **Unrated** (artists with an album still to rate), and **OMFG!** (artists with a 4).
+- **Progress chips** along the top show Written, Top 9, and Picks, and turn red when something is wrong (more than 9, or two picks in one genre). Two more sit at the end: **Rated** (albums with a rating; hover for the Oof!/Okay.../Oh, My!/OMFG! breakdown, tap to see what is still unrated) and **Physical** (albums you own; tap to filter). The row scrolls sideways when it is wider than the screen.
 - **Review sheet** (tap the Top 9 or Picks chip, or "See the list" on a card): the current Top 9 as a wall of covers with open slots, and the picks by genre. Each row has Open (jump to that album) and Clear (remove the flag and save). The Top 9 here is read-only and follows the ranking. Use "Edit the full ranking" to change it.
 - **Saving:** about two seconds after you stop typing, and immediately when you switch away from the app. Commit messages name the artist, for example "Update Mastodon."
 - **If two devices edit at once,** the app stops and asks whether to load the latest or overwrite. It never overwrites silently.
@@ -78,6 +79,8 @@ The app reads columns by header name, keeps columns it does not know about, keep
 | Date Added | `yyyy-mm-dd`. |
 | Release Date | Optional. `yyyy-mm-dd`, from Apple Music or typed. The column is added the first time something is written to it. For the published page, format it as you like (the app shows "Oct 2, 2026"). |
 | Label | Optional. Plain text, cleaned from Apple's copyright line. Added the first time something is written to it. |
+| Rating | Optional. `1` to `4`, blank means unrated. Shown in the logger as **Oof!** (●), **Okay...** (●●), **Oh, My!** (●●●), **OMFG!** (●●●●). The number is what is stored, so the page can sort, count, or average it, and the labels can be reworded without touching data. The column is added the first time something is rated. |
+| Physical Copy | Optional. `Yes` or blank. Checked when you bought the album on physical media. The column is added the first time the box is checked. |
 
 **What appears on the published page:** a row appears once it has a Sentence, a Genre, and a Type of LP, EP, or blank (blank counts as LP). Split, Demo, Live, Archival, Reissue, Soundtrack, and Single rows stay in the CSV, but are not shown and not counted.
 
