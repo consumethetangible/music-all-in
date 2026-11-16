@@ -1265,10 +1265,14 @@ body:not([data-state="loading"]) .loading{display:none}
   }
   function onEdit(i, key, v) {
     if (col[key] == null && LAZY[key]) ensureCol(key, LAZY[key]);
+    const wasWritten = key === 'sentence' && !!val(i, 'sentence').trim();   /* before the edit lands */
     setVal(i, key, v); touched.add(val(i, 'artist').trim() || 'new artist'); markDirty();
     if (key === 'artist') { selected = v.trim() || selected; renderEditor(); renderList(); refreshStats(); return; }
     editor.querySelectorAll('.album').forEach(a => refreshCard(a, +a.dataset.row));
-    refreshStats(); renderList(); refreshNext();
+    refreshStats();
+    /* Typing in a sentence only changes the list when the row flips between written and not written; rebuilding it on every keystroke makes the cover images flash. */
+    if (key !== 'sentence' || wasWritten !== !!v.trim()) renderList();
+    refreshNext();
   }
 
   /* ---------- progress chips ---------- */
